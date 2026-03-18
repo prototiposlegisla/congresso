@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congresso de Comissões</title>
+    <style>
+        :root {
+            --pri: #1e3a5f; --accent: #2b6cb0; --ok: #276749; --ok-bg: #c6f6d5;
+            --nok: #c53030; --nok-bg: #fed7d7; --warn: #b7791f; --warn-bg: #fefcbf;
+            --bg: #f0f4f8; --card: #fff; --brd: #d2d6dc; --txt: #1a202c; --txt2: #718096;
+            --hdr: 48px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body { height:100%; }
+        body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--txt); display:flex; flex-direction:column; overflow:hidden; }
+        button { cursor:pointer; font-family:inherit; font-size:inherit; }
+        input,textarea { font-family:inherit; font-size:inherit; }
+
+        /* HEADER */
+        .hdr { display:flex; align-items:center; height:var(--hdr); padding:0 8px; background:var(--pri); color:#fff; flex-shrink:0; gap:8px; }
+        .hdr h1 { font-size:14px; font-weight:600; white-space:nowrap; }
+        .timer { display:flex; align-items:center; gap:4px; margin-left:auto; }
+        #tm { font-family:Consolas,"Courier New",monospace; font-size:20px; font-weight:700; }
+        .timer button, .hdr-btn { background:rgba(255,255,255,.15); border:none; color:#fff; min-width:32px; height:32px; border-radius:4px; font-size:13px; padding:0 8px; }
+        .timer button:hover, .hdr-btn:hover { background:rgba(255,255,255,.3); }
+        .timer button:disabled { opacity:.35; }
+        .tm-w { color:#fbd38d!important; }
+        .tm-d { color:#feb2b2!important; }
+
+        /* APP */
+        .app { display:flex; flex:1; overflow:hidden; }
+
+        /* SIDEBAR */
+        .side { width:100%; max-width:400px; border-right:1px solid var(--brd); display:flex; flex-direction:column; background:#fff; flex-shrink:0; }
+        .tabs { display:flex; border-bottom:1px solid var(--brd); }
+        .tabs button { flex:1; padding:8px; border:none; background:none; font-size:13px; font-weight:600; color:var(--txt2); border-bottom:2px solid transparent; }
+        .tabs button.on { color:var(--accent); border-bottom-color:var(--accent); }
+        .tbar { padding:6px 8px; border-bottom:1px solid var(--brd); display:flex; flex-wrap:wrap; gap:4px; }
+        .tbar button { background:var(--bg); border:1px solid var(--brd); padding:6px 10px; border-radius:4px; font-size:12px; color:var(--txt); }
+        .tbar button:hover { background:#e2e8f0; }
+        .tbar input { flex:1; min-width:80px; padding:6px 8px; border:1px solid var(--brd); border-radius:4px; font-size:13px; }
+        .stats { padding:3px 8px; font-size:11px; color:var(--txt2); background:#f7fafc; border-bottom:1px solid var(--brd); }
+        .tcont { display:none; flex-direction:column; flex:1; overflow:hidden; }
+        .tcont.on { display:flex; }
+        .lst { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+        /* ENTRIES */
+        .ent { display:flex; align-items:center; padding:8px; border-bottom:1px solid #edf2f7; cursor:pointer; font-size:13px; gap:6px; min-height:44px; }
+        .ent:active { background:#ebf4ff; }
+        .ent.sel { background:#ebf4ff; }
+        .ent.pres { background:#eff6ff; border-left:3px solid #6b9bd2; font-weight:600; font-size:12px; }
+        .ent.pres.sel { background:#dbeafe; }
+        .ent.nvotavel { background:#f1f5f9; color:#8899a8; }
+        .ent.sem-com { background:#f1f5f9; color:#8899a8; }
+        .badge-res { font-size:13px; font-weight:700; flex-shrink:0; line-height:1; }
+        .badge-res.ok { color:var(--ok); }
+        .badge-res.no { color:var(--nok); }
+        .ent .chk { flex-shrink:0; width:18px; height:18px; }
+        .ent .et { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .badge-pe { background:#fbd38d; color:#744210; font-size:10px; padding:1px 5px; border-radius:3px; font-weight:600; flex-shrink:0; }
+        .badge-c { font-size:10px; color:var(--txt2); flex-shrink:0; }
+        .bi { background:none; border:none; padding:4px; font-size:14px; border-radius:4px; color:var(--txt2); min-width:28px; min-height:28px; }
+        .bi:hover { background:#e2e8f0; }
+        .bi.rm:hover { background:var(--nok-bg); color:var(--nok); }
+
+        /* DRAG AND DROP */
+        .drag-handle { cursor:grab; padding:4px 2px; font-size:15px; color:var(--brd); user-select:none; touch-action:none; flex-shrink:0; line-height:1; }
+        .drag-handle:hover { color:var(--txt2); }
+        .ent.dragging { opacity:0.2; }
+        .drag-line { height:2px; background:var(--accent); border-radius:1px; pointer-events:none; }
+
+        /* MAIN */
+        .main { flex:1; overflow-y:auto; padding:16px; -webkit-overflow-scrolling:touch; display:none; }
+        .main.on { display:block; }
+        .ph { color:var(--txt2); text-align:center; margin-top:60px; font-size:14px; }
+        .det h2 { font-size:17px; margin-bottom:10px; }
+        .det h3 { font-size:13px; margin:14px 0 6px; color:var(--pri); text-transform:uppercase; }
+        .hint { font-size:12px; color:var(--txt2); margin-bottom:8px; }
+        .imeta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+        .imeta label { display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer; }
+        .fg { margin-bottom:10px; }
+        .fg label { display:block; font-size:11px; font-weight:600; margin-bottom:2px; color:var(--txt2); text-transform:uppercase; }
+        .fg input, .fg textarea { width:100%; padding:6px 8px; border:1px solid var(--brd); border-radius:4px; font-size:13px; }
+        .fg textarea { resize:vertical; }
+
+        /* COMISSAO CARDS */
+        .cc { border:1px solid var(--brd); border-radius:6px; margin-bottom:6px; overflow:hidden; }
+        .cc.off { opacity:.5; }
+        .cch { display:flex; align-items:center; gap:6px; padding:8px; background:#f7fafc; font-size:13px; cursor:pointer; }
+        .cch label { display:flex; align-items:center; gap:5px; cursor:pointer; flex:1; font-weight:600; }
+        .cch .cnm { font-weight:400; font-size:11px; color:var(--txt2); }
+        .ccb { padding:8px; display:none; }
+        .cc.ativo .ccb { display:block; }
+        .qb { display:inline-block; font-size:10px; padding:1px 6px; border-radius:8px; font-weight:600; white-space:nowrap; }
+        .qok { background:var(--ok-bg); color:var(--ok); }
+        .qno { background:var(--nok-bg); color:var(--nok); }
+
+        /* MEMBER VOTES */
+        .mv { display:flex; flex-wrap:wrap; gap:3px; }
+        .mr { display:flex; align-items:center; gap:4px; padding:3px 6px; border-radius:4px; font-size:12px; background:#f7fafc; border:1px solid #edf2f7; min-height:32px; }
+        .mr.ausente { opacity:.35; }
+        .mr .vb { min-width:28px; height:24px; border:1px solid var(--brd); border-radius:3px; font-size:10px; font-weight:700; background:#fff; }
+        .mr .vb.sim { background:var(--ok-bg); color:var(--ok); border-color:var(--ok); }
+        .mr .vb.nao { background:var(--nok-bg); color:var(--nok); border-color:var(--nok); }
+        .mr .vb.abst { background:var(--warn-bg); color:var(--warn); border-color:var(--warn); }
+
+        /* PRESENCE DETAIL */
+        .pc { border:1px solid var(--brd); border-radius:6px; margin-bottom:8px; overflow:hidden; }
+        .pch { display:flex; justify-content:space-between; align-items:center; padding:8px; background:#f7fafc; font-size:13px; font-weight:600; }
+        .pcb { padding:8px; }
+        .mg { display:flex; flex-wrap:wrap; gap:3px; }
+        .mc { display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer; padding:4px 6px; border-radius:4px; background:#f7fafc; border:1px solid #edf2f7; min-height:36px; }
+        .mc input { width:17px; height:17px; }
+        .pa { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+        .pa button { padding:6px 10px; border:1px solid var(--brd); border-radius:4px; font-size:12px; background:#fff; min-height:36px; }
+
+        /* NAV BUTTONS */
+        .nav-bar { display:flex; gap:6px; margin-bottom:12px; }
+        .nav-btn { flex:1; display:flex; align-items:center; gap:6px; padding:10px 14px; border:1px solid var(--brd); border-radius:6px; background:#fff; font-size:13px; color:var(--txt); min-height:48px; transition:background .15s; }
+        .nav-btn:hover:not(:disabled) { background:#ebf4ff; border-color:var(--accent); }
+        .nav-btn:disabled { opacity:.3; cursor:default; }
+        .nav-btn .nav-arrow { font-size:20px; font-weight:700; color:var(--accent); flex-shrink:0; }
+        .nav-btn .nav-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .nav-btn.next { justify-content:flex-end; text-align:right; }
+
+        /* RESULT */
+        .res { border:1px solid var(--brd); border-radius:6px; padding:10px; margin-top:10px; }
+        .res h3 { margin-top:0; }
+        .rs { font-size:14px; font-weight:700; margin-top:4px; }
+        .rs.ok { color:var(--ok); }
+        .rs.no { color:var(--nok); }
+        .rs.pe { color:var(--warn); }
+
+        /* MODAL */
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; justify-content:center; align-items:flex-start; padding:20px; overflow-y:auto; }
+        .modal.show { display:flex; }
+        .mcard { background:#fff; border-radius:8px; width:600px; max-width:100%; max-height:90vh; display:flex; flex-direction:column; }
+        .mhdr { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--brd); }
+        .mhdr h2 { font-size:15px; }
+        .mbody { flex:1; overflow-y:auto; padding:12px; -webkit-overflow-scrolling:touch; }
+        .mftr { padding:10px 12px; border-top:1px solid var(--brd); display:flex; justify-content:flex-end; gap:6px; }
+        .mftr button { padding:6px 14px; border:1px solid var(--brd); border-radius:4px; font-size:13px; background:#fff; }
+        .mftr button.pri { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .cfgc { margin-bottom:14px; }
+        .cfgc h4 { font-size:12px; margin-bottom:4px; color:var(--pri); }
+        .cfgm { display:flex; gap:4px; margin-bottom:3px; }
+        .cfgm input { flex:1; padding:4px 6px; border:1px solid var(--brd); border-radius:4px; font-size:13px; }
+        .addm { font-size:12px; color:var(--accent); background:none; border:none; padding:3px 0; }
+
+        /* IMPORTAR/EXPORTAR TEXTO */
+        .cfg-txt { margin-bottom:16px; padding-bottom:14px; border-bottom:2px solid var(--brd); }
+        .cfg-txt summary { cursor:pointer; font-size:13px; font-weight:600; color:var(--pri); padding:4px 0; user-select:none; }
+        .cfg-txt textarea { width:100%; min-height:200px; padding:8px; border:1px solid var(--brd); border-radius:4px; font-size:12px; font-family:Consolas,"Courier New",monospace; resize:vertical; margin-top:6px; line-height:1.5; }
+        .cfg-txt .hint { font-size:11px; color:var(--txt2); margin-top:4px; }
+        .cfg-txt .btn-row { display:flex; gap:6px; margin-top:6px; }
+        .cfg-txt .btn-row button { padding:5px 12px; border:1px solid var(--brd); border-radius:4px; font-size:12px; background:#fff; }
+        .cfg-txt .btn-row button.pri { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .cfg-txt .btn-row button.pri:hover { background:#2558a0; }
+        .cfg-txt .msg { font-size:12px; margin-top:4px; padding:4px 8px; border-radius:4px; display:none; }
+        .cfg-txt .msg.ok { display:block; background:var(--ok-bg); color:var(--ok); }
+        .cfg-txt .msg.err { display:block; background:var(--nok-bg); color:var(--nok); }
+
+        /* HAMBURGER */
+        .btn-menu { display:none; background:rgba(255,255,255,.15); border:none; color:#fff; width:32px; height:32px; border-radius:4px; font-size:18px; line-height:1; }
+        .btn-menu:hover { background:rgba(255,255,255,.3); }
+
+        /* BACKDROP */
+        .side-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:49; }
+
+        /* DESKTOP */
+        @media(min-width:700px) {
+            .side { width:380px; }
+            .main { display:block!important; }
+            .ent { min-height:34px; padding:5px 8px; }
+        }
+        /* MOBILE */
+        @media(max-width:699px) {
+            .hdr h1 { display:none; }
+            .btn-menu { display:inline-block; }
+            .main { display:block!important; }
+            .side {
+                position:fixed; top:var(--hdr); left:0; bottom:0; z-index:50;
+                max-width:85vw; width:380px;
+                transform:translateX(-100%); transition:transform .25s ease;
+                box-shadow:2px 0 12px rgba(0,0,0,.15);
+            }
+            .app.side-open .side { transform:translateX(0); }
+            .app.side-open .side-backdrop { display:block; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hdr">
+    <button class="btn-menu" id="bt-menu" title="Menu">&#9776;</button>
+    <h1>Congresso</h1>
+    <div class="timer">
+        <span id="tm">75:00</span>
+        <button id="bt-play" title="Iniciar">&#9654;</button>
+        <button id="bt-pause" title="Pausar" disabled>&#10074;&#10074;</button>
+        <button id="bt-reset" title="Reiniciar">&#8634;</button>
+    </div>
+    <button class="hdr-btn" id="bt-cfg">&#9881;</button>
+    <button class="hdr-btn" id="bt-novo">Novo</button>
+</header>
+
+<div class="app" id="app">
+    <div class="side-backdrop" id="side-backdrop"></div>
+    <aside class="side">
+        <div class="tabs">
+            <button class="on" data-tab="cong">Congresso</button>
+            <button data-tab="itens">Itens</button>
+        </div>
+        <div id="t-cong" class="tcont on">
+            <div class="tbar">
+                <button id="bt-pres">+ Presença</button>
+                <button id="bt-pe">+ Pé de Pauta</button>
+            </div>
+            <div id="st-cong" class="stats"></div>
+            <div id="l-cong" class="lst"></div>
+        </div>
+        <div id="t-itens" class="tcont">
+            <div class="tbar">
+                <input type="text" id="busca" placeholder="Buscar...">
+            </div>
+            <div id="st-itens" class="stats"></div>
+            <div id="l-itens" class="lst"></div>
+        </div>
+    </aside>
+    <main class="main" id="main">
+        <div id="det"></div>
+    </main>
+</div>
+
+<div id="modal" class="modal">
+    <div class="mcard">
+        <div class="mhdr"><h2>Configuração</h2><button class="bi" onclick="fecharCfg()">&#10005;</button></div>
+        <div class="mbody" id="cfgbody"></div>
+        <div class="mftr">
+            <button onclick="resetCom()">Restaurar padrão</button>
+            <button class="pri" onclick="fecharCfg()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== COMISSÕES DEFAULT ==========
+const COM_DEF = [
+    { sigla:'CCJ', nome:'Constituição, Justiça e Legislação Participativa',
+      membros:['Dr. Milton Ferreira (PODE)','Janaína Paschoal (PP)','Lucas Pavanato (PL)','Luna Zarattini (PT)','Sandra Santana (MDB)','Sansão Pereira (REPUBLICANOS)','Silvia da Bancada Feminista (PSOL)','Silvão Leite (UNIÃO)','Thammy Miranda (PSD)'] },
+    { sigla:'FIN', nome:'Finanças e Orçamento',
+      membros:['Alessandro Guedes (PSD)','Ana Carolina Oliveira (PODE)','André Santos (REPUBLICANOS)','Gilberto Nascimento (PL)','João Ananias (PT)','Keit Lima (PSOL)','Major Palumbo (PP)','Marcelo Messias (MDB)','Silvinho Leite (UNIÃO)'] },
+    { sigla:'URB', nome:'Política Urbana, Metropolitana e Meio Ambiente',
+      membros:['Danilo do Posto (PODE)','Dheison Silva (PT)','Dr. Murillo Lima (PP)','Fábio Riva (MDB)','Isac Félix (PL)','Marina Bragante (PSOL)','Rubinho Nunes (UNIÃO)'] },
+    { sigla:'ADM', nome:'Administração Pública',
+      membros:['Amanda Vettorazzo (UNIÃO)','Edir Sales (PSD)','Gabriel Abreu (PODE)','Jair Tatto (PT)','Professor Toninho Vespoli (PSOL)','Sargento Nantes (PP)','Zoe Martínez (PL)'] },
+    { sigla:'ECON', nome:'Trânsito, Transporte e Atividade Econômica',
+      membros:['Carlos Bezerra Jr. (PSD)','Kenji Ito (PODE)','Luana Alves (PSOL)','Nabil Bonduki (PT)','Paulo Frange (MDB)','Renata Falzoni (UNIÃO)','Rute Costa (PL)'] },
+    { sigla:'EDUC', nome:'Educação, Cultura e Esportes',
+      membros:['Adrilles Jorge (UNIÃO)','Celso Giannazi (PSOL)','Cris Monteiro (PODE)','Eliseu Gabriel (PSB)','George Hato (MDB)','Senival Moura (PT)','Sonaira Fernandes (PL)'] },
+    { sigla:'SAUDE', nome:'Saúde, Promoção Social, Trabalho e Mulher',
+      membros:['Amanda Paschoal (PSOL)','Dra. Sandra Tadeu (PL)','Ely Teruel (MDB)','Hélio Rodrigues (PT)','Pastora Sandra Alves (UNIÃO)','Roberto Tripoli (PV)','Simone Ganem (PODE)'] },
+];
+
+// ========== ESTADO ==========
+let coms = [];          // comissões ativas (editáveis)
+let itens = [];         // todos os itens da pauta (ordem original)
+let cong = [];          // ordem do congresso: [{t:'item',iid:'item-5'}, {t:'pres',pid:'p-1'}, ...]
+let pres = {};          // presença: pid -> {titulo, pr:{sigla:[nomes]}}
+let selId = null;       // id selecionado no congresso (iid ou pid)
+let aTab = 'cong';
+let filtro = '';
+let nPres = 2;
+let nItem = 101;
+let tmr = { tot:75*60, rem:75*60, on:false, id:null, t0:null, el:0 };
+
+// ========== INIT ==========
+function init() {
+    if (!load()) {
+        coms = JSON.parse(JSON.stringify(COM_DEF));
+        for (let i=1;i<=100;i++) itens.push(mkItem(i));
+        // presença inicial vazia
+        const p = mkPres(1);
+        pres[p.id] = p;
+        cong.push({t:'pres', pid:p.id});
+    }
+    render();
+    events();
+}
+
+function mkItem(n) {
+    return { id:'i-'+n, num:n, tit:'Item '+n,
+             desc:'', pe:false, apregoado:false, cAtv:[], votos:{} };
+}
+function mkPres(n) {
+    return { id:'p-'+n, num:n, titulo:'Registro de Presença #'+n, pr:{} };
+}
+function getItem(iid) { return itens.find(i=>i.id===iid); }
+function isSel(iid) { return cong.some(e=>e.t==='item'&&e.iid===iid); }
+
+// ========== PERSISTÊNCIA ==========
+function save() {
+    try { localStorage.setItem('cong-cmsp', JSON.stringify({coms,itens,cong,pres,selId,aTab,nPres,nItem,tmrRem:tmr.rem})); } catch(e){}
+}
+function load() {
+    try {
+        const d=JSON.parse(localStorage.getItem('cong-cmsp'));
+        if(!d||!d.itens) return false;
+        coms=d.coms; itens=d.itens; cong=d.cong; pres=d.pres;
+        selId=d.selId; aTab=d.aTab||'cong'; nPres=d.nPres||2; nItem=d.nItem||101;
+        tmr.rem=d.tmrRem!=null?d.tmrRem:75*60;
+        return true;
+    } catch(e){ return false; }
+}
+
+// ========== RENDER ==========
+function render() {
+    renderTabs();
+    renderCong();
+    renderItens();
+    renderDet();
+    renderTm();
+}
+
+function renderTabs() {
+    document.querySelectorAll('.tabs button').forEach(b=>{
+        b.classList.toggle('on', b.dataset.tab===aTab);
+    });
+    document.getElementById('t-cong').classList.toggle('on', aTab==='cong');
+    document.getElementById('t-itens').classList.toggle('on', aTab==='itens');
+}
+
+// ---- Aba Congresso ----
+function renderCong() {
+    let nIt=0, nOk=0, nNo=0;
+    cong.forEach(e=>{
+        if(e.t==='item'){ nIt++; const r=calcRes(getItem(e.iid)); if(r==='ok')nOk++; else if(r==='no')nNo++; }
+    });
+    document.getElementById('st-cong').textContent = nIt+' itens | '+nOk+' aprov | '+nNo+' rej';
+
+    const el=document.getElementById('l-cong');
+    if(!cong.length){ el.innerHTML='<div class="ph" style="margin-top:20px">Nenhum item.<br>Use "Itens" para selecionar.</div>'; return; }
+
+    let h='';
+    cong.forEach((e,i)=>{
+        if(e.t==='pres'){
+            const p=pres[e.pid];
+            h+='<div class="ent pres'+(selId===e.pid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.pid+'\',\'pres\')">' +
+               '<span class="drag-handle">&#10495;</span>' +
+               '<span class="et">'+esc(p.titulo)+'</span>' +
+               '<button class="bi rm" onclick="event.stopPropagation();rmPres(\''+e.pid+'\')">&#10005;</button></div>';
+        } else {
+            const it=getItem(e.iid); if(!it) return;
+            const vt=votavel(it);
+            const cls = it.cAtv.length===0?'sem-com': vt?'votavel':'nvotavel';
+            const r=it.cAtv.length>0?calcRes(it):'';
+            const resBadge = r==='ok'?'<span class="badge-res ok">&#10003;</span>':r==='no'?'<span class="badge-res no">&#10007;</span>':'';
+            h+='<div class="ent '+cls+(selId===e.iid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.iid+'\',\'item\')">' +
+               '<span class="drag-handle">&#10495;</span>' +
+               resBadge +
+               '<span class="et">'+esc(it.tit)+'</span>' +
+               (it.pe?'<span class="badge-pe">PÉ</span>':'') +
+               (it.cAtv.length?'<span class="badge-c">'+it.cAtv.length+'C</span>':'') +
+               '<button class="bi" onclick="event.stopPropagation();moverFim(\''+e.iid+'\')" title="Enviar p/ final">&#8615;</button></div>';
+        }
+    });
+    el.innerHTML=h;
+}
+
+// ---- Aba Itens ----
+function renderItens() {
+    const f=filtro.toLowerCase();
+    const vis=f?itens.filter(i=>i.tit.toLowerCase().includes(f)||i.desc.toLowerCase().includes(f)||String(i.num).includes(f)):itens;
+    const sc=itens.filter(i=>isSel(i.id)).length;
+    document.getElementById('st-itens').textContent=sc+'/'+itens.length+' selecionados';
+    let h='';
+    vis.forEach(i=>{
+        h+='<div class="ent'+(selId===i.id?' sel':'')+'" onclick="sel(\''+i.id+'\',\'item\')">' +
+           '<input type="checkbox" class="chk" '+(isSel(i.id)?'checked':'')+' onclick="event.stopPropagation();togSel(\''+i.id+'\')">' +
+           '<span class="et">'+esc(i.tit)+'</span>' +
+           (i.pe?'<span class="badge-pe">PÉ</span>':'') +
+           '</div>';
+    });
+    document.getElementById('l-itens').innerHTML=h;
+}
+
+// ---- Navegação prev/next no congresso ----
+function getCongNav(id) {
+    const idx = cong.findIndex(e => (e.t==='item' && e.iid===id) || (e.t==='pres' && e.pid===id));
+    if (idx < 0) return { prev:null, next:null };
+    const prev = idx > 0 ? cong[idx-1] : null;
+    const next = idx < cong.length-1 ? cong[idx+1] : null;
+    return { prev, next };
+}
+function congEntryLabel(e) {
+    if (e.t==='pres') { const p=pres[e.pid]; return p ? p.titulo : '?'; }
+    const it=getItem(e.iid); return it ? it.tit : '?';
+}
+function congEntryId(e) { return e.t==='pres' ? e.pid : e.iid; }
+function congEntryType(e) { return e.t==='pres' ? 'pres' : 'item'; }
+
+function renderNavBar(id) {
+    const nav = getCongNav(id);
+    let h = '<div class="nav-bar">';
+    if (nav.prev) {
+        h += '<button class="nav-btn prev" onclick="sel(\''+congEntryId(nav.prev)+'\',\''+congEntryType(nav.prev)+'\')">' +
+             '<span class="nav-arrow">&#8592;</span><span class="nav-label">'+esc(congEntryLabel(nav.prev))+'</span></button>';
+    } else {
+        h += '<button class="nav-btn prev" disabled><span class="nav-arrow">&#8592;</span><span class="nav-label">Início</span></button>';
+    }
+    if (nav.next) {
+        h += '<button class="nav-btn next" onclick="sel(\''+congEntryId(nav.next)+'\',\''+congEntryType(nav.next)+'\')">' +
+             '<span class="nav-label">'+esc(congEntryLabel(nav.next))+'</span><span class="nav-arrow">&#8594;</span></button>';
+    } else {
+        h += '<button class="nav-btn next" disabled><span class="nav-label">Fim</span><span class="nav-arrow">&#8594;</span></button>';
+    }
+    h += '</div>';
+    return h;
+}
+
+// ---- Detalhes ----
+function renderDet() {
+    const el=document.getElementById('det');
+    if(!selId){ el.innerHTML='<div class="ph">Selecione um item.</div>'; return; }
+    // É presença?
+    if(pres[selId]) { renderDetPres(el, pres[selId]); return; }
+    // É item?
+    const it=getItem(selId);
+    if(it) { renderDetItem(el, it); return; }
+    el.innerHTML='<div class="ph">Não encontrado.</div>';
+}
+
+function renderDetPres(el, p) {
+    let h=renderNavBar(p.id);
+    h+='<div class="det"><h2>'+esc(p.titulo)+'</h2>' +
+        '<p class="hint">Marque os membros presentes em cada comissão.</p>' +
+        '<div class="pa"><button onclick="presAll(\''+p.id+'\',true)">Todos presentes</button>' +
+        '<button onclick="presAll(\''+p.id+'\',false)">Todos ausentes</button></div>';
+
+    // Resumo abertura
+    const conv = getConvocadas();
+    let cq=0;
+    coms.forEach(c=>{
+        if(!conv.has(c.sigla)) return;
+        const pr=p.pr[c.sigla]||[];
+        const q=Math.floor(c.membros.length/2)+1;
+        const ok=pr.length>=q;
+        if(ok) cq++;
+        h+='<div class="pc"><div class="pch"><span>'+c.sigla+'</span>' +
+           '<span class="qb '+(ok?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+(ok?' ✓':' ✗')+'</span></div>' +
+           '<div class="pcb"><div class="mg">';
+        c.membros.forEach((m,mi)=>{
+            h+='<label class="mc"><input type="checkbox" '+(pr.includes(m)?'checked':'')+
+               ' onchange="togPres(\''+p.id+'\','+coms.indexOf(c)+','+mi+')"> '+esc(m)+'</label>';
+        });
+        h+='</div></div></div>';
+    });
+
+    if(conv.size>0){
+        const abre=cq>conv.size/2;
+        h+='<div class="res"><h3>Abertura</h3><p>Comissões convocadas com quórum: '+cq+'/'+conv.size+'</p>' +
+           '<p class="rs '+(abre?'ok':'no')+'">Congresso '+(abre?'pode abrir':'NÃO pode abrir')+'</p></div>';
+    }
+    h+='</div>';
+    el.innerHTML=h;
+}
+
+function renderDetItem(el, it) {
+    const ef = getPresEf(it.id);
+    let h=renderNavBar(it.id);
+    h+='<div class="det"><h2>'+esc(it.tit)+'</h2>';
+    h+='<div class="imeta"><label><input type="checkbox" '+(isSel(it.id)?'checked':'')+
+       ' onchange="togSel(\''+it.id+'\')"> No Congresso</label>' +
+       '<label><input type="checkbox" '+(it.pe?'checked':'')+
+       ' onchange="togPe(\''+it.id+'\')"> Pé de Pauta</label>' +
+       '<label><input type="checkbox" '+(it.apregoado?'checked':'')+
+       ' onchange="togApregoado(\''+it.id+'\')"> Apregoado</label></div>';
+    h+='<div class="fg"><label>Título</label><input value="'+ea(it.tit)+'" onchange="setTit(\''+it.id+'\',this.value)"></div>';
+    h+='<div class="fg"><label>Descrição</label><textarea rows="2" onchange="setDesc(\''+it.id+'\',this.value)">'+esc(it.desc)+'</textarea></div>';
+
+    h+='<h3>Comissões</h3>';
+    coms.forEach((c,ci)=>{
+        const at=it.cAtv.includes(c.sigla);
+        const pr=ef[c.sigla]||[];
+        const q=Math.floor(c.membros.length/2)+1;
+        const qOk=pr.length>=q;
+
+        h+='<div class="cc '+(at?'ativo':'off')+'"><div class="cch">' +
+           '<label><input type="checkbox" '+(at?'checked':'')+' onchange="togCom(\''+it.id+'\',\''+c.sigla+'\')"> '+
+           c.sigla+' <span class="cnm">'+esc(c.nome)+'</span></label>' +
+           (at?'<span class="qb '+(qOk?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+'</span>':'') +
+           '</div>';
+
+        if(at){
+            h+='<div class="ccb"><div class="mv">';
+            if(it.apregoado){
+                c.membros.forEach((m,mi)=>{
+                    const presente=pr.includes(m);
+                    const v=(it.votos[c.sigla]&&it.votos[c.sigla][m])||'sim';
+                    if(presente){
+                        const vc=v==='sim'?'sim':v==='nao'?'nao':'abst';
+                        const vl=v==='sim'?'S':v==='nao'?'N':'A';
+                        h+='<div class="mr"><button class="vb '+vc+'" onclick="togVoto(\''+it.id+'\',\''+c.sigla+'\','+ci+','+mi+')">'+vl+'</button> '+esc(m)+'</div>';
+                    } else {
+                        h+='<div class="mr ausente"><span class="vb">—</span> '+esc(m)+'</div>';
+                    }
+                });
+                h+='</div>';
+                // resultado comissão
+                const rv=resComissao(it,c.sigla,pr);
+                const rl=rv.res==='ok'?' — Favorável':rv.res==='no'?' — Contrário':rv.tot>0?' — Pendente':' — Sem presentes';
+                h+='<div style="margin-top:6px;font-size:12px">'+rv.sim+'S / '+rv.nao+'N / '+rv.abst+'A (maioria: '+rv.maioria+')'+rl+'</div>';
+            } else {
+                c.membros.forEach(m=>{
+                    const presente=pr.includes(m);
+                    h+='<div class="mr'+(presente?'':' ausente')+'"><span class="vb">—</span> '+esc(m)+'</div>';
+                });
+                h+='</div>';
+                h+='<div style="margin-top:6px;font-size:12px;color:var(--txt2)">Aguardando apregoação</div>';
+            }
+            h+='</div>';
+        }
+        h+='</div>';
+    });
+
+    // Resultado geral
+    if(it.cAtv.length>0){
+        if(it.apregoado){
+            const r=calcRes(it);
+            let fav=0, con=0, pend=0;
+            it.cAtv.forEach(s=>{
+                const pr=ef[s]||[];
+                const rv=resComissao(it,s,pr);
+                if(rv.res==='ok') fav++; else if(rv.res==='no') con++; else pend++;
+            });
+            h+='<div class="res"><h3>Resultado</h3><p>Favoráveis: '+fav+' | Contrárias: '+con+' | Pendentes: '+pend+' | Total: '+it.cAtv.length+'</p>' +
+               '<p class="rs '+(r==='ok'?'ok':r==='no'?'no':'pe')+'">'+(r==='ok'?'APROVADO':r==='no'?'REJEITADO':'PENDENTE')+'</p></div>';
+        } else {
+            h+='<div class="res"><h3>Resultado</h3><p style="color:var(--txt2)">Item ainda não foi apregoado</p></div>';
+        }
+    }
+    h+='</div>';
+    el.innerHTML=h;
+}
+
+// ========== LÓGICA ==========
+function getPresEf(iid) {
+    // Presença efetiva: última presença ANTES deste item na ordem do congresso
+    const idx=cong.findIndex(e=>e.t==='item'&&e.iid===iid);
+    if(idx<0) return {};
+    for(let i=idx-1;i>=0;i--){
+        if(cong[i].t==='pres') return pres[cong[i].pid].pr;
+    }
+    return {};
+}
+
+function resComissao(it, sigla, presentes) {
+    let sim=0, nao=0, abst=0;
+    presentes.forEach(m=>{
+        const v=(it.votos[sigla]&&it.votos[sigla][m])||'sim';
+        if(v==='sim') sim++; else if(v==='nao') nao++; else abst++;
+    });
+    const c=coms.find(c=>c.sigla===sigla);
+    const total=c?c.membros.length:0;
+    const maioria=Math.floor(total/2)+1;
+    const res=sim>=maioria?'ok':nao>=maioria?'no':'pe';
+    return { sim, nao, abst, tot:presentes.length, total, maioria, res };
+}
+
+function calcRes(it) {
+    if(it.cAtv.length===0||!it.apregoado) return 'pe';
+    const ef=getPresEf(it.id);
+    let fav=0, con=0;
+    it.cAtv.forEach(s=>{
+        const pr=ef[s]||[];
+        const rv=resComissao(it,s,pr);
+        if(rv.res==='ok') fav++; else if(rv.res==='no') con++;
+    });
+    if(fav>it.cAtv.length/2) return 'ok';
+    if(con>it.cAtv.length/2) return 'no';
+    return 'pe';
+}
+
+function votavel(it) {
+    if(it.cAtv.length===0) return false;
+    const ef=getPresEf(it.id);
+    let cq=0;
+    it.cAtv.forEach(s=>{
+        const c=coms.find(c=>c.sigla===s);
+        if(!c) return;
+        const pr=ef[s]||[];
+        if(pr.length>=Math.floor(c.membros.length/2)+1) cq++;
+    });
+    return cq>it.cAtv.length/2;
+}
+
+function getConvocadas() {
+    const s=new Set();
+    cong.forEach(e=>{ if(e.t==='item'){ const it=getItem(e.iid); if(it) it.cAtv.forEach(c=>s.add(c)); } });
+    return s;
+}
+
+// ========== AÇÕES ==========
+function sel(id, tipo) {
+    selId=id;
+    document.getElementById('main').classList.add('on');
+    save(); render();
+    document.getElementById('main').scrollTop=0;
+}
+
+function togMenu() {
+    document.getElementById('app').classList.toggle('side-open');
+}
+
+function closeMenu() {
+    document.getElementById('app').classList.remove('side-open');
+}
+
+function togSel(iid) {
+    if(isSel(iid)){
+        cong=cong.filter(e=>!(e.t==='item'&&e.iid===iid));
+    } else {
+        cong.push({t:'item', iid});
+    }
+    save(); render();
+}
+
+function togPe(iid) {
+    const it=getItem(iid); if(it) it.pe=!it.pe;
+    save(); render();
+}
+function togApregoado(iid) {
+    const it=getItem(iid); if(it) it.apregoado=!it.apregoado;
+    save(); render();
+}
+
+function moverFim(iid) {
+    const idx=cong.findIndex(e=>e.t==='item'&&e.iid===iid);
+    if(idx>-1){ const [e]=cong.splice(idx,1); cong.push(e); }
+    save(); render();
+}
+
+function addPres() {
+    const n=nPres++;
+    const p=mkPres(n);
+    // herdar da presença anterior mais próxima
+    const prevPres = findPrevPres();
+    if(prevPres) {
+        coms.forEach(c=>{
+            p.pr[c.sigla] = prevPres.pr[c.sigla] ? [...prevPres.pr[c.sigla]] : [];
+        });
+    }
+    pres[p.id]=p;
+    // inserir após o item selecionado no congresso, ou no final
+    if(selId) {
+        const idx=cong.findIndex(e=>(e.t==='item'&&e.iid===selId)||(e.t==='pres'&&e.pid===selId));
+        if(idx>-1) { cong.splice(idx+1,0,{t:'pres',pid:p.id}); }
+        else cong.push({t:'pres',pid:p.id});
+    } else { cong.push({t:'pres',pid:p.id}); }
+    selId=p.id;
+    save(); render();
+}
+
+function findPrevPres() {
+    // última presença no congresso
+    for(let i=cong.length-1;i>=0;i--){
+        if(cong[i].t==='pres') return pres[cong[i].pid];
+    }
+    return null;
+}
+
+function rmPres(pid) {
+    cong=cong.filter(e=>!(e.t==='pres'&&e.pid===pid));
+    delete pres[pid];
+    if(selId===pid) selId=null;
+    save(); render();
+}
+
+function addPe() {
+    const n=nItem++;
+    const it=mkItem(n);
+    it.pe=true;
+    it.tit='Pé '+(n-100);
+    itens.push(it);
+    cong.push({t:'item', iid:it.id});
+    selId=it.id;
+    save(); render();
+}
+
+function togPres(pid, ci, mi) {
+    const p=pres[pid]; if(!p) return;
+    const s=coms[ci].sigla, m=coms[ci].membros[mi];
+    if(!p.pr[s]) p.pr[s]=[];
+    const idx=p.pr[s].indexOf(m);
+    if(idx>-1) p.pr[s].splice(idx,1); else p.pr[s].push(m);
+    save(); render();
+}
+
+function presAll(pid, val) {
+    const p=pres[pid]; if(!p) return;
+    coms.forEach(c=>{ p.pr[c.sigla]=val?[...c.membros]:[]; });
+    save(); render();
+}
+
+function togCom(iid, sigla) {
+    const it=getItem(iid); if(!it) return;
+    const idx=it.cAtv.indexOf(sigla);
+    if(idx>-1){ it.cAtv.splice(idx,1); delete it.votos[sigla]; }
+    else { it.cAtv.push(sigla); it.votos[sigla]={}; }
+    save(); render();
+}
+
+function togVoto(iid, sigla, ci, mi) {
+    const it=getItem(iid); if(!it) return;
+    const m=coms[ci].membros[mi];
+    if(!it.votos[sigla]) it.votos[sigla]={};
+    const cur=it.votos[sigla][m]||'sim';
+    it.votos[sigla][m]=cur==='sim'?'nao':cur==='nao'?'abst':'sim';
+    save(); render();
+}
+
+function setTit(iid,v) { const it=getItem(iid); if(it) it.tit=v; save(); renderCong(); renderItens(); }
+function setDesc(iid,v) { const it=getItem(iid); if(it) it.desc=v; save(); }
+
+// ========== TIMER ==========
+function renderTm() {
+    const m=Math.floor(tmr.rem/60), s=tmr.rem%60;
+    const d=document.getElementById('tm');
+    d.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    d.className=tmr.rem<=300?'tm-d':tmr.rem<=900?'tm-w':'';
+}
+function playTm() {
+    if(tmr.on) return;
+    tmr.on=true; tmr.t0=Date.now(); tmr.el=0;
+    tmr.id=setInterval(()=>{
+        const t=Math.floor((Date.now()-tmr.t0)/1000);
+        if(t>tmr.el){ tmr.rem-=(t-tmr.el); tmr.el=t; if(tmr.rem<=0){tmr.rem=0;pauseTm();} renderTm();save(); }
+    },250);
+    document.getElementById('bt-play').disabled=true;
+    document.getElementById('bt-pause').disabled=false;
+}
+function pauseTm() {
+    tmr.on=false; clearInterval(tmr.id);
+    document.getElementById('bt-play').disabled=false;
+    document.getElementById('bt-pause').disabled=true;
+}
+function resetTm() { pauseTm(); tmr.rem=tmr.tot; renderTm(); save(); }
+
+// ========== CONFIG COMISSÕES ==========
+function abrirCfg() { document.getElementById('modal').classList.add('show'); renderCfg(); }
+function fecharCfg() { document.getElementById('modal').classList.remove('show'); }
+
+function renderCfg() {
+    let h='<details class="cfg-txt" open>' +
+        '<summary>Compartilhar sessão (copiar/colar)</summary>' +
+        '<textarea id="cfg-txt-area" spellcheck="false">' + esc(exportState()) + '</textarea>' +
+        '<p class="hint">Copie este texto para compartilhar as configurações (comissões, itens, presenças e votos). Para importar, cole o texto e clique em Aplicar.</p>' +
+        '<div class="btn-row"><button onclick="copiarTxt()">Copiar</button>' +
+        '<button class="pri" onclick="aplicarTxt()">Aplicar</button></div>' +
+        '<div id="cfg-txt-msg" class="msg"></div></details>';
+    coms.forEach((c,ci)=>{
+        h+='<div class="cfgc"><h4>'+c.sigla+' ('+c.membros.length+') — '+esc(c.nome)+'</h4>';
+        c.membros.forEach((m,mi)=>{
+            h+='<div class="cfgm"><input value="'+ea(m)+'" onchange="updMem('+ci+','+mi+',this.value)">' +
+               '<button class="bi rm" onclick="rmMem('+ci+','+mi+')">&#10005;</button></div>';
+        });
+        h+='<button class="addm" onclick="addMem('+ci+')">+ Adicionar membro</button></div>';
+    });
+    document.getElementById('cfgbody').innerHTML=h;
+}
+
+function updMem(ci,mi,nome) {
+    const ant=coms[ci].membros[mi], sig=coms[ci].sigla;
+    coms[ci].membros[mi]=nome;
+    Object.values(pres).forEach(p=>{
+        if(p.pr[sig]){ const i=p.pr[sig].indexOf(ant); if(i>-1) p.pr[sig][i]=nome; }
+    });
+    // atualizar votos nos itens
+    itens.forEach(it=>{
+        if(it.votos[sig]&&it.votos[sig][ant]!=null){ it.votos[sig][nome]=it.votos[sig][ant]; delete it.votos[sig][ant]; }
+    });
+    save(); render();
+}
+
+function rmMem(ci,mi) {
+    const nome=coms[ci].membros[mi], sig=coms[ci].sigla;
+    coms[ci].membros.splice(mi,1);
+    Object.values(pres).forEach(p=>{
+        if(p.pr[sig]) p.pr[sig]=p.pr[sig].filter(m=>m!==nome);
+    });
+    itens.forEach(it=>{ if(it.votos[sig]) delete it.votos[sig][nome]; });
+    save(); renderCfg(); render();
+}
+
+function addMem(ci) {
+    const n=coms[ci].membros.length+1;
+    coms[ci].membros.push(coms[ci].sigla+'-'+n);
+    save(); renderCfg();
+}
+
+function resetCom() {
+    if(!confirm('Restaurar comissões ao padrão?')) return;
+    coms=JSON.parse(JSON.stringify(COM_DEF));
+    Object.values(pres).forEach(p=>{ p.pr={}; });
+    save(); renderCfg(); render();
+}
+
+// ========== IMPORTAR / EXPORTAR TEXTO ==========
+function exportState() {
+    let txt = '=== COMISSÕES ===\n\n';
+    txt += coms.map(c =>
+        c.sigla + ' | ' + c.nome + '\n' + c.membros.join('\n')
+    ).join('\n\n');
+
+    if (cong.length > 0) {
+        txt += '\n\n=== CONGRESSO ===';
+        cong.forEach(e => {
+            txt += '\n\n';
+            if (e.t === 'pres') {
+                const p = pres[e.pid];
+                txt += 'PRESENÇA #' + p.num;
+                coms.forEach(c => {
+                    const pr = p.pr[c.sigla] || [];
+                    if (pr.length > 0) txt += '\n' + c.sigla + ': ' + pr.join('; ');
+                });
+            } else {
+                const it = getItem(e.iid);
+                if (!it) return;
+                txt += 'ITEM ' + it.num + (it.pe ? ' | PÉ' : '');
+                txt += '\nTítulo: ' + it.tit;
+                if (it.desc) txt += '\nDescrição: ' + it.desc.replace(/\n/g, ' ');
+                if (it.cAtv.length > 0) {
+                    txt += '\nComissões: ' + it.cAtv.join(', ');
+                    it.cAtv.forEach(s => {
+                        const votos = it.votos[s] || {};
+                        const parts = Object.entries(votos).map(([m, v]) =>
+                            m + '=' + (v === 'sim' ? 'S' : v === 'nao' ? 'N' : 'A')
+                        );
+                        if (parts.length > 0) txt += '\nVotos ' + s + ': ' + parts.join('; ');
+                    });
+                }
+            }
+        });
+    }
+    return txt.trimEnd();
+}
+
+function importState(txt) {
+    // Dividir em linhas e agrupar por seções e blocos
+    const lines = txt.split('\n');
+    let section = null;
+    let block = [];
+    const blocks = { com: [], cong: [] };
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (/^===\s*COMISS[ÕO]ES\s*===$/i.test(trimmed)) {
+            if (block.length > 0 && section) blocks[section].push(block);
+            section = 'com'; block = []; continue;
+        }
+        if (/^===\s*CONGRESSO\s*===$/i.test(trimmed)) {
+            if (block.length > 0 && section) blocks[section].push(block);
+            section = 'cong'; block = []; continue;
+        }
+        if (section) {
+            if (trimmed === '') {
+                if (block.length > 0) { blocks[section].push(block); block = []; }
+            } else {
+                block.push(trimmed);
+            }
+        }
+    }
+    if (block.length > 0 && section) blocks[section].push(block);
+
+    // --- Parsear comissões ---
+    const newComs = [];
+    for (const bl of blocks.com) {
+        const cab = bl[0];
+        const sep = cab.indexOf('|');
+        if (sep < 0) return { ok: false, erro: 'Formato inválido: "' + cab + '". Use: SIGLA | Nome' };
+        const sigla = cab.substring(0, sep).trim();
+        const nome = cab.substring(sep + 1).trim();
+        if (!sigla) return { ok: false, erro: 'Sigla vazia em: "' + cab + '"' };
+        const membros = bl.slice(1).filter(l => l);
+        if (membros.length === 0) return { ok: false, erro: 'Comissão "' + sigla + '" sem membros.' };
+        newComs.push({ sigla, nome, membros });
+    }
+    if (newComs.length === 0) return { ok: false, erro: 'Nenhuma comissão encontrada.' };
+
+    // --- Resetar estado ---
+    coms = newComs;
+    itens = [];
+    for (let i = 1; i <= 100; i++) itens.push(mkItem(i));
+    cong = [];
+    pres = {};
+    nPres = 2;
+    nItem = 101;
+
+    // --- Parsear congresso ---
+    for (const bl of blocks.cong) {
+        const header = bl[0];
+
+        // Presença
+        const presMatch = header.match(/^PRESEN[CÇ]A\s*#(\d+)$/i);
+        if (presMatch) {
+            const num = parseInt(presMatch[1]);
+            if (num >= nPres) nPres = num + 1;
+            const p = mkPres(num);
+            for (let i = 1; i < bl.length; i++) {
+                const col = bl[i].indexOf(':');
+                if (col < 0) continue;
+                const sig = bl[i].substring(0, col).trim();
+                const membros = bl[i].substring(col + 1).split(';').map(m => m.trim()).filter(m => m);
+                p.pr[sig] = membros;
+            }
+            pres[p.id] = p;
+            cong.push({ t: 'pres', pid: p.id });
+            continue;
+        }
+
+        // Item
+        const itemMatch = header.match(/^ITEM\s+(\d+)(\s*\|\s*P[ÉE])?$/i);
+        if (itemMatch) {
+            const num = parseInt(itemMatch[1]);
+            const pe = !!itemMatch[2];
+            let it = itens.find(x => x.id === 'i-' + num);
+            if (!it) {
+                it = mkItem(num);
+                it.pe = pe;
+                itens.push(it);
+                if (num >= nItem) nItem = num + 1;
+            } else {
+                it.pe = pe;
+            }
+            for (let i = 1; i < bl.length; i++) {
+                const line = bl[i];
+                if (/^T[ií]tulo:/i.test(line)) {
+                    it.tit = line.replace(/^T[ií]tulo:\s*/i, '');
+                } else if (/^Descri[çc][ãa]o:/i.test(line)) {
+                    it.desc = line.replace(/^Descri[çc][ãa]o:\s*/i, '');
+                } else if (/^Comiss[õo]es:/i.test(line)) {
+                    it.cAtv = line.replace(/^Comiss[õo]es:\s*/i, '').split(',').map(s => s.trim()).filter(s => s);
+                } else if (/^Votos\s+/i.test(line)) {
+                    const col = line.indexOf(':');
+                    const sig = line.substring(6, col).trim();
+                    const votosStr = line.substring(col + 1).trim();
+                    it.votos[sig] = {};
+                    votosStr.split(';').forEach(v => {
+                        const eq = v.lastIndexOf('=');
+                        if (eq < 0) return;
+                        const membro = v.substring(0, eq).trim();
+                        const vl = v.substring(eq + 1).trim().toUpperCase();
+                        it.votos[sig][membro] = vl === 'S' ? 'sim' : vl === 'N' ? 'nao' : 'abst';
+                    });
+                }
+            }
+            cong.push({ t: 'item', iid: it.id });
+            continue;
+        }
+
+        return { ok: false, erro: 'Bloco não reconhecido: "' + header + '"' };
+    }
+
+    selId = null;
+    save();
+    return { ok: true };
+}
+
+function aplicarTxt() {
+    const ta = document.getElementById('cfg-txt-area');
+    const msg = document.getElementById('cfg-txt-msg');
+    if (!confirm('Isso substituirá todos os dados atuais. Continuar?')) return;
+    const res = importState(ta.value);
+    if (res.ok) {
+        msg.className = 'msg ok';
+        msg.textContent = 'Dados importados com sucesso!';
+        renderCfg(); render();
+    } else {
+        msg.className = 'msg err';
+        msg.textContent = res.erro;
+    }
+    setTimeout(() => { msg.className = 'msg'; msg.textContent = ''; }, 5000);
+}
+
+function copiarTxt() {
+    const ta = document.getElementById('cfg-txt-area');
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(() => {
+        const msg = document.getElementById('cfg-txt-msg');
+        msg.className = 'msg ok';
+        msg.textContent = 'Copiado!';
+        setTimeout(() => { msg.className = 'msg'; msg.textContent = ''; }, 2000);
+    });
+}
+
+// ========== NOVO ==========
+function novo() {
+    if(!confirm('Limpar todos os dados?')) return;
+    localStorage.removeItem('cong-cmsp');
+    location.reload();
+}
+
+// ========== DRAG AND DROP ==========
+let dragState = null;
+
+function onDragStart(e) {
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    const ent = handle.closest('.ent');
+    if (!ent || ent.dataset.idx == null) return;
+    e.preventDefault();
+    const idx = parseInt(ent.dataset.idx);
+    dragState = { idx, targetIdx: idx };
+    ent.classList.add('dragging');
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup', onDragEnd);
+    document.addEventListener('pointercancel', onDragEnd);
+}
+
+function onDragMove(e) {
+    if (!dragState) return;
+    e.preventDefault();
+    const lst = document.getElementById('l-cong');
+    const entries = [...lst.querySelectorAll('.ent')];
+    lst.querySelectorAll('.drag-line').forEach(l => l.remove());
+
+    let targetIdx = cong.length;
+    for (let i = 0; i < entries.length; i++) {
+        const rect = entries[i].getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) {
+            targetIdx = parseInt(entries[i].dataset.idx);
+            entries[i].insertAdjacentHTML('beforebegin', '<div class="drag-line"></div>');
+            dragState.targetIdx = targetIdx;
+            autoScroll(lst, e.clientY);
+            return;
+        }
+    }
+    if (entries.length > 0) {
+        entries[entries.length - 1].insertAdjacentHTML('afterend', '<div class="drag-line"></div>');
+    }
+    dragState.targetIdx = targetIdx;
+    autoScroll(lst, e.clientY);
+}
+
+function autoScroll(lst, y) {
+    const r = lst.getBoundingClientRect();
+    if (y < r.top + 30) lst.scrollTop -= 10;
+    else if (y > r.bottom - 30) lst.scrollTop += 10;
+}
+
+function onDragEnd() {
+    if (!dragState) return;
+    const lst = document.getElementById('l-cong');
+    lst.querySelectorAll('.drag-line').forEach(l => l.remove());
+    const d = lst.querySelector('.ent.dragging');
+    if (d) d.classList.remove('dragging');
+    document.removeEventListener('pointermove', onDragMove);
+    document.removeEventListener('pointerup', onDragEnd);
+    document.removeEventListener('pointercancel', onDragEnd);
+
+    const { idx, targetIdx } = dragState;
+    dragState = null;
+    if (targetIdx !== idx && targetIdx !== idx + 1) {
+        const [item] = cong.splice(idx, 1);
+        const insertAt = targetIdx > idx ? targetIdx - 1 : targetIdx;
+        cong.splice(insertAt, 0, item);
+        save(); render();
+    }
+}
+
+// ========== UTIL ==========
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function ea(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ========== EVENTOS ==========
+function events() {
+    document.querySelectorAll('.tabs button').forEach(b=>{
+        b.addEventListener('click',()=>{ aTab=b.dataset.tab; save(); renderTabs(); });
+    });
+    document.getElementById('busca').addEventListener('input',e=>{ filtro=e.target.value; renderItens(); });
+    document.getElementById('bt-play').addEventListener('click', playTm);
+    document.getElementById('bt-pause').addEventListener('click', pauseTm);
+    document.getElementById('bt-reset').addEventListener('click', resetTm);
+    document.getElementById('bt-pres').addEventListener('click', addPres);
+    document.getElementById('bt-pe').addEventListener('click', addPe);
+    document.getElementById('bt-cfg').addEventListener('click', abrirCfg);
+    document.getElementById('bt-novo').addEventListener('click', novo);
+    document.getElementById('bt-menu').addEventListener('click', togMenu);
+    document.getElementById('side-backdrop').addEventListener('click', closeMenu);
+    document.getElementById('modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) fecharCfg(); });
+    document.getElementById('l-cong').addEventListener('pointerdown', onDragStart);
+}
+
+// ========== START ==========
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
