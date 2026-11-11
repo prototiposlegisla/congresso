@@ -199,6 +199,28 @@
         .sv-rm:hover { background:var(--nok-bg); color:var(--nok); }
         .sv-empty { font-size:12px; color:var(--txt2); margin:8px 0 0; }
 
+        /* CARGO (presidente/vice) */
+        .cargo { font-size:9px; font-weight:800; padding:1px 4px; border-radius:3px; flex-shrink:0; line-height:1.4; }
+        .cargo.p { background:#fbd38d; color:#744210; }
+        .cargo.v { background:#cbd5e0; color:#2d3748; }
+
+        /* TROCA DE MEMBRO (mesmo partido) */
+        .swap { width:26px; border:1px solid var(--brd); border-radius:4px; background:#fff; color:var(--txt2); font-size:12px; cursor:pointer; padding:0; height:24px; flex-shrink:0; }
+        .swap:hover { border-color:var(--accent); color:var(--accent); }
+
+        /* LINKS SPLEGIS */
+        .spl-links { display:inline-flex; gap:4px; vertical-align:middle; margin-left:6px; }
+        .spl-links a { font-size:10px; font-weight:700; padding:2px 7px; border:1px solid var(--brd); border-radius:4px; text-decoration:none; color:var(--accent); background:#fff; }
+        .spl-links a:hover { background:#ebf4ff; border-color:var(--accent); }
+
+        /* ABA COMISSÕES */
+        .ct-hdr { display:flex; align-items:center; gap:6px; padding:7px 8px; background:var(--pri); color:#fff; font-size:12px; font-weight:700; position:sticky; top:0; z-index:1; }
+        .ct-hdr .qb { margin-left:auto; }
+        .ct-empty { padding:6px 8px 10px; font-size:12px; color:var(--txt2); border-bottom:1px solid #edf2f7; }
+
+        /* LINK DO QUADRO NO HEADER */
+        a.hdr-btn { display:inline-flex; align-items:center; text-decoration:none; }
+
         /* MODAL */
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; justify-content:center; align-items:flex-start; padding:20px; overflow-y:auto; }
         .modal.show { display:flex; }
@@ -268,6 +290,7 @@
         <button id="bt-pause" title="Pausar" disabled>&#10074;&#10074;</button>
         <button id="bt-reset" title="Reiniciar">&#8634;</button>
     </div>
+    <a class="hdr-btn" href="https://www.saopaulo.sp.leg.br/atividade-legislativa/comissoes/" target="_blank" rel="noopener" title="Quadro de Composição das Comissões — site da Câmara">&#128203; Quadro</a>
     <button class="hdr-btn" id="bt-cfg">&#9881;</button>
     <button class="hdr-btn" id="bt-novo">Novo</button>
 </header>
@@ -279,6 +302,7 @@
             <div class="tabs">
                 <button class="on" data-tab="cong">Congresso</button>
                 <button data-tab="itens">Itens</button>
+                <button data-tab="coms">Comissões</button>
             </div>
             <div id="t-cong" class="tcont on">
                 <div class="tbar">
@@ -294,6 +318,10 @@
                 </div>
                 <div id="st-itens" class="stats"></div>
                 <div id="l-itens" class="lst"></div>
+            </div>
+            <div id="t-coms" class="tcont">
+                <div id="st-coms" class="stats"></div>
+                <div id="l-coms" class="lst"></div>
             </div>
         </div>
         <div class="side-notes">
@@ -400,6 +428,7 @@ function render() {
     renderTabs();
     renderCong();
     renderItens();
+    renderComsTab();
     renderDet();
     renderTm();
     renderNotas();
@@ -416,6 +445,7 @@ function renderTabs() {
     });
     document.getElementById('t-cong').classList.toggle('on', aTab==='cong');
     document.getElementById('t-itens').classList.toggle('on', aTab==='itens');
+    document.getElementById('t-coms').classList.toggle('on', aTab==='coms');
 }
 
 // ---- Aba Congresso ----
@@ -470,6 +500,31 @@ function renderItens() {
            '</div>';
     });
     document.getElementById('l-itens').innerHTML=h;
+}
+
+// ---- Aba Comissões (itens por comissão) ----
+function renderComsTab() {
+    const el=document.getElementById('l-coms'); if(!el) return;
+    const conv=getConvocadas();
+    document.getElementById('st-coms').textContent = conv.size+' comissão(ões) convocada(s)';
+    let h='';
+    coms.forEach(c=>{
+        const its=cong.filter(e=>e.t==='item').map(e=>getItem(e.iid)).filter(it=>it&&it.cAtv.includes(c.sigla));
+        const nOk=its.filter(it=>it.apregoado&&calcRes(it)==='ok').length;
+        h+='<div class="ct-hdr"><span>'+c.sigla+'</span><span style="font-weight:400;font-size:11px;opacity:.75">'+esc(c.nome)+'</span>' +
+           '<span class="qb '+(its.length?'qok':'qno')+'">'+(its.length?nOk+'/'+its.length+' votados':'sem itens')+'</span></div>';
+        if(!its.length){ h+='<div class="ct-empty">Nenhum item do Congresso passa por esta comissão.</div>'; return; }
+        its.forEach(it=>{
+            const r=(it.apregoado)?calcRes(it):'';
+            const resBadge = r==='ok'?'<span class="badge-res ok" title="Aprovado">&#10003;</span>':r==='no'?'<span class="badge-res no" title="Rejeitado">&#10007;</span>':r==='pe'?'<span class="badge-res pe" title="Apregoado, pendente">&#9680;</span>':'';
+            h+='<div class="ent'+(selId===it.id?' sel':'')+'" onclick="sel(\''+it.id+'\',\'item\')">' +
+               resBadge +
+               '<span class="et">'+esc(it.tit)+'</span>' +
+               (it.pe?'<span class="badge-pe">PÉ</span>':'') +
+               '</div>';
+        });
+    });
+    el.innerHTML=h;
 }
 
 // ---- Navegação prev/next no congresso ----
@@ -539,12 +594,23 @@ function renderDetPres(el, p) {
         h+='<div class="pc '+(ok?'st-ok':'st-no')+'"><div class="pch"><span>'+c.sigla+'</span>' +
            '<span class="qb '+(ok?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+(ok?' ✓':' ✗')+'</span></div>' +
            '<div class="pcb"><div class="mg">';
+        const ci=coms.indexOf(c);
         c.membros.forEach((m,mi)=>{
             const checked=pr.includes(m);
             const herdada=p.herd&&p.herd[c.sigla]&&p.herd[c.sigla].includes(m);
             const mcCls=checked?(herdada?'mc herd':'mc nova'):'mc';
+            const trocas=trocasPossiveis(c,m);
+            let swapSel='';
+            if(trocas.length){
+                swapSel='<select class="swap" title="Trocar por colega do mesmo partido" ' +
+                    'onclick="event.preventDefault();event.stopPropagation()" ' +
+                    'onchange="swapMem(\''+p.id+'\','+ci+','+mi+',this.value)">' +
+                    '<option value="">&#8644;</option>' +
+                    trocas.map(t=>'<option value="'+ea(t)+'">'+esc(t)+'</option>').join('') +
+                    '</select>';
+            }
             h+='<label class="'+mcCls+'"><input type="checkbox" '+(checked?'checked':'')+
-               ' onchange="togPres(\''+p.id+'\','+coms.indexOf(c)+','+mi+')"> '+esc(m)+'</label>';
+               ' onchange="togPres(\''+p.id+'\','+ci+','+mi+')"> '+cargoBadge(c,m)+esc(m)+' '+swapSel+'</label>';
         });
         h+='</div></div></div>';
     });
@@ -566,7 +632,7 @@ function renderDetItem(el, it) {
     if(main){ main.classList.remove('st-ok','st-no','st-pe');
         if(it.cAtv.length>0&&it.apregoado){ const rg=calcRes(it); main.classList.add(rg==='ok'?'st-ok':rg==='no'?'st-no':'st-pe'); } }
     let h=renderNavBar(it.id);
-    h+='<div class="det"><h2>'+esc(it.tit)+'</h2>';
+    h+='<div class="det"><h2>'+esc(it.tit)+splegisLinks(it)+'</h2>';
     h+=svSecaoHtml(it);
     h+='<div class="imeta"><label><input type="checkbox" '+(isSel(it.id)?'checked':'')+
        ' onchange="togSel(\''+it.id+'\')"> No Congresso</label>' +
@@ -603,9 +669,9 @@ function renderDetItem(el, it) {
                     if(presente){
                         const vc=v==='sim'?'sim':v==='nao'?'nao':v==='abst'?'abst':'nada';
                         const vl=v==='sim'?'S':v==='nao'?'N':v==='abst'?'A':'·';
-                        h+='<div class="mr"><button class="vb '+vc+'" onclick="togVoto(\''+it.id+'\',\''+c.sigla+'\','+ci+','+mi+')">'+vl+'</button> '+esc(m)+'</div>';
+                        h+='<div class="mr"><button class="vb '+vc+'" onclick="togVoto(\''+it.id+'\',\''+c.sigla+'\','+ci+','+mi+')">'+vl+'</button> '+cargoBadge(c,m)+esc(m)+'</div>';
                     } else {
-                        h+='<div class="mr ausente"><span class="vb">—</span> '+esc(m)+'</div>';
+                        h+='<div class="mr ausente"><span class="vb">—</span> '+cargoBadge(c,m)+esc(m)+'</div>';
                     }
                 });
                 h+='</div>';
@@ -616,7 +682,7 @@ function renderDetItem(el, it) {
             } else {
                 c.membros.forEach(m=>{
                     const presente=pr.includes(m);
-                    h+='<div class="mr'+(presente?'':' ausente')+'"><span class="vb">—</span> '+esc(m)+'</div>';
+                    h+='<div class="mr'+(presente?'':' ausente')+'"><span class="vb">—</span> '+cargoBadge(c,m)+esc(m)+'</div>';
                 });
                 h+='</div>';
                 h+='<div style="margin-top:6px;font-size:12px;color:var(--txt2)">Aguardando apregoação</div>';
@@ -824,6 +890,66 @@ function svRemove(it, idx){
     }
     svFocus=true;
     save(); render();
+}
+
+// ========== CARGOS E TROCAS ==========
+// Badge de presidente/vice de uma comissão (c.pres / c.vice guardam o nome completo)
+function cargoBadge(c, m){
+    if(c.pres===m) return '<span class="cargo p" title="Presidente">P</span> ';
+    if(c.vice===m) return '<span class="cargo v" title="Vice-presidente">V</span> ';
+    return '';
+}
+
+// Partido de um nome "Fulano (PARTIDO)" (ignora sufixos como [LICENÇA até ...])
+function partidoDe(nome){
+    const a=nome.lastIndexOf('('), b=nome.indexOf(')', a);
+    if(a<0||b<0) return '';
+    return nome.substring(a+1,b).trim();
+}
+
+// Colegas do mesmo partido (entre todos os vereadores conhecidos) que não estão na comissão
+function trocasPossiveis(c, nome){
+    const p=partidoDe(nome); if(!p) return [];
+    return vereadoresTodos().map(v=>v.nome)
+        .filter(n=>n!==nome && partidoDe(n)===p && !c.membros.includes(n))
+        .sort((a,b)=>a.localeCompare(b,'pt'));
+}
+
+// Troca um membro da comissão por um colega do mesmo partido (para viabilizar quorum).
+// A troca vale daqui para a frente: muda a composição, marca o novo como presente no
+// registro de presença atual e anota a troca nas Anotações. Presenças e votos anteriores
+// ficam como estavam (história não é reescrita). Cargo de presidente/vice não acompanha.
+function swapMem(pid, ci, mi, novo){
+    if(!novo) return;
+    const c=coms[ci]; const ant=c.membros[mi]; const sig=c.sigla;
+    if(!confirm('Trocar '+ant+' por '+novo+' na '+sig+'?')){ render(); return; }
+    c.membros[mi]=novo;
+    if(c.pres===ant) c.pres=null;
+    if(c.vice===ant) c.vice=null;
+    const p=pres[pid];
+    if(p){
+        if(!p.pr[sig]) p.pr[sig]=[];
+        const i=p.pr[sig].indexOf(ant);
+        if(i>-1) p.pr[sig].splice(i,1);
+        if(!p.pr[sig].includes(novo)) p.pr[sig].push(novo);
+    }
+    const d=new Date();
+    const hora=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    notas=(notas?notas+'\n':'')+'Troca '+sig+' ('+hora+'): '+ant+' → '+novo;
+    save(); render();
+}
+
+// ========== LINK SPLEGIS ==========
+// Extrai "PL 123/2026" do título/descrição do item e monta os links do SPLegis
+function splegisLinks(it){
+    const m=((it.tit||'')+' '+(it.desc||'')).match(/\b(PL|PDL|PR|PLO)\s*(?:n[ºo.]?\s*)?0*(\d+)\s*\/\s*(\d{4})\b/i);
+    if(!m) return '';
+    const codes={PL:1,PDL:2,PR:3,PLO:4};
+    const q='?tipo='+codes[m[1].toUpperCase()]+'&numero='+parseInt(m[2])+'&ano='+m[3];
+    return '<span class="spl-links">' +
+        '<a href="https://splegisconsulta.saopaulo.sp.leg.br/Pesquisa/DetailsMateriaTramitacaoLegislativa'+q+'" target="_blank" rel="noopener" title="SPLegis Consulta (público)">SPL</a>' +
+        '<a href="https://splegis.saopaulo.sp.leg.br/Pesquisa/DetailsMateriaTramitacaoLegislativa'+q+'" target="_blank" rel="noopener" title="SPLegis Intranet">INT</a>' +
+        '</span>';
 }
 
 // ========== LÓGICA ==========
@@ -1086,6 +1212,8 @@ function renderCfg() {
 function updMem(ci,mi,nome) {
     const ant=coms[ci].membros[mi], sig=coms[ci].sigla;
     coms[ci].membros[mi]=nome;
+    if(coms[ci].pres===ant) coms[ci].pres=nome;
+    if(coms[ci].vice===ant) coms[ci].vice=nome;
     Object.values(pres).forEach(p=>{
         if(p.pr[sig]){ const i=p.pr[sig].indexOf(ant); if(i>-1) p.pr[sig][i]=nome; }
     });
@@ -1099,6 +1227,8 @@ function updMem(ci,mi,nome) {
 function rmMem(ci,mi) {
     const nome=coms[ci].membros[mi], sig=coms[ci].sigla;
     coms[ci].membros.splice(mi,1);
+    if(coms[ci].pres===nome) coms[ci].pres=null;
+    if(coms[ci].vice===nome) coms[ci].vice=null;
     Object.values(pres).forEach(p=>{
         if(p.pr[sig]) p.pr[sig]=p.pr[sig].filter(m=>m!==nome);
     });
@@ -1123,7 +1253,9 @@ function resetCom() {
 function exportState() {
     let txt = '=== COMISSÕES ===\n\n';
     txt += coms.map(c =>
-        c.sigla + ' | ' + c.nome + '\n' + c.membros.join('\n')
+        c.sigla + ' | ' + c.nome + '\n' + c.membros.map(m =>
+            m + (c.pres === m ? ' [PRESIDENTE]' : c.vice === m ? ' [VICE]' : '')
+        ).join('\n')
     ).join('\n\n');
 
     if (cong.length > 0) {
@@ -1210,9 +1342,21 @@ function importState(txt) {
         const sigla = cab.substring(0, sep).trim();
         const nome = cab.substring(sep + 1).trim();
         if (!sigla) return { ok: false, erro: 'Sigla vazia em: "' + cab + '"' };
-        const membros = bl.slice(1).filter(l => l);
+        const membros = []; let presNome = null, viceNome = null;
+        bl.slice(1).filter(l => l).forEach(l => {
+            let nome = l.trim();
+            // Marcador de cargo no fim da linha: [PRESIDENTE], [VICE], [P], [V],
+            // ou "– PRESIDENTE" / "– VICE(-PRESIDENTE)" como no Quadro da Câmara
+            let mm = nome.match(/^(.*?)\s*\[\s*(PRESIDENTE|VICE(?:-PRESIDENTE)?|P|V)\s*\]$/i);
+            if (!mm) mm = nome.match(/^(.*?)\s*[–\-—]\s*(PRESIDENTE|VICE(?:-PRESIDENTE)?)$/i);
+            if (mm) {
+                nome = mm[1].trim();
+                if (/^v/i.test(mm[2])) viceNome = nome; else presNome = nome;
+            }
+            membros.push(nome);
+        });
         if (membros.length === 0) return { ok: false, erro: 'Comissão "' + sigla + '" sem membros.' };
-        newComs.push({ sigla, nome, membros });
+        newComs.push({ sigla, nome, membros, pres: presNome, vice: viceNome });
     }
     if (newComs.length === 0) return { ok: false, erro: 'Nenhuma comissão encontrada.' };
 
