@@ -62,6 +62,26 @@
         .ent.pres .bi { color:#cbd5e0; }
         .ent.pres .bi:hover { background:rgba(255,255,255,.15); color:#fff; }
         .ent.pres.sel { box-shadow:inset -5px 0 0 #f6ad55; }
+        /* Prévia de presenças: listras âmbar = "ainda não vale" */
+        .ent.pres.prev, .mx tr.pr.prev td { background:repeating-linear-gradient(135deg,#1a202c 0 10px,#3d3413 10px 20px); }
+        .badge-prev { display:inline-block; background:#f6c343; color:#3a2c00; font-size:10px; font-weight:700; padding:1px 6px; border-radius:3px; letter-spacing:.04em; vertical-align:middle; }
+        #bt-prev-hdr { background:#f6c343; color:#3a2c00; border-color:#f6c343; font-weight:700; }
+        .det.em-prev { outline:2px dashed #d69e2e; outline-offset:6px; border-radius:4px; }
+        .prev-box { background:repeating-linear-gradient(135deg,#fff8dc 0 12px,#fdf0bf 12px 24px); border:1px solid #d69e2e; border-radius:6px; padding:10px 12px; margin-bottom:10px; font-size:13px; line-height:1.45; color:#3a2c00; }
+        .prev-tr { margin-top:8px; font-weight:600; }
+        .prev-tr div { display:flex; gap:8px; align-items:center; font-weight:400; margin-top:3px; }
+        .prev-tr button { border:1px solid #b7892a; background:#fff; border-radius:4px; font-size:11px; padding:2px 8px; cursor:pointer; }
+        .prev-ac { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+        .prev-ac button { padding:6px 12px; border:1px solid #b7892a; border-radius:4px; font-size:12px; background:#fff; min-height:34px; cursor:pointer; color:#3a2c00; }
+        .prev-ac button.pri { background:#276749; border-color:#276749; color:#fff; font-weight:600; }
+        .pa button.bt-prev { border-color:#d69e2e; background:#fffbea; }
+        .pa button.bt-prev:disabled { opacity:.5; }
+        .ent.sep { background:var(--accent); color:#fff; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.5px; border-top:3px solid var(--pri); }
+        .ent.sep .et { text-align:center; }
+        .ent.sep .drag-handle { color:#bee3f8; }
+        .ent.sep .bi { color:#bee3f8; }
+        .ent.sep .bi:hover { background:rgba(255,255,255,.15); color:#fff; }
+        .ent.sep.sel { box-shadow:inset -5px 0 0 #f6ad55; }
         .ent.nvotavel { background:#f1f5f9; color:#8899a8; }
         .ent.sem-com { background:#f1f5f9; color:#8899a8; }
         .badge-res { font-size:14px; font-weight:700; flex-shrink:0; line-height:1; }
@@ -144,6 +164,67 @@
         .lg-nova { color:var(--ok); font-weight:600; }
         .pa { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
         .pa button { padding:6px 10px; border:1px solid var(--brd); border-radius:4px; font-size:12px; background:#fff; min-height:36px; }
+
+        /* BARRA DE QUÓRUM: preenchimento = presentes; traço = quórum */
+        .qbar { flex:1; min-width:30px; height:6px; background:rgba(0,0,0,.12); border-radius:3px; position:relative; display:block; }
+        .qbar i { display:block; height:100%; border-radius:3px; background:var(--nok); max-width:100%; }
+        .qbar.ok i { background:var(--ok); }
+        .qbar u { position:absolute; top:-3px; bottom:-3px; width:2px; margin-left:-1px; background:var(--txt); }
+        .pch { gap:8px; }
+
+        /* COMISSÕES EM COLUNAS (presença e item) */
+        .cgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; align-items:start; }
+        .cgrid .cc, .cgrid .pc { margin-bottom:0; }
+        .cgrid .mv, .cgrid .mg { flex-direction:column; flex-wrap:nowrap; }
+        .cgrid .mc .swap { margin-left:auto; }
+        .cgrid .cnm { display:none; }
+        .cgrid .cch label { flex:0 0 auto; }
+        .cc-offs { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; margin-top:8px; font-size:12px; color:var(--txt2); }
+        .cc-offs label { display:flex; gap:4px; align-items:center; cursor:pointer; font-weight:600; color:var(--txt); }
+
+        /* VISÃO GERAL (matriz itens × comissões) */
+        .hdr-btn.ativo { background:#fff; color:var(--pri); }
+        .mx-wrap { background:#fff; border:1px solid var(--brd); border-radius:6px; overflow:auto; max-height:calc(100vh - var(--hdr) - 110px); }
+        .mx { border-collapse:collapse; width:100%; font-size:13px; }
+        .mx th { position:sticky; top:0; background:#fff; z-index:1; box-shadow:inset 0 -2px 0 var(--pri); padding:7px 8px; text-align:center; font-size:12px; color:var(--pri); }
+        .mx th.t { text-align:left; }
+        .mx td { border-bottom:1px solid #edf2f7; padding:0 6px; height:34px; text-align:center; }
+        .mx td.t { text-align:left; max-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 10px; }
+        .mx td.c { width:84px; border-left:1px solid #edf2f7; font-size:12px; }
+        .mx td.s { width:120px; white-space:nowrap; font-size:11px; font-weight:700; }
+        .mx tbody tr { cursor:pointer; }
+        .mx tr.it:hover td.t, .mx tr.it:hover td.s { background:#ebf4ff; }
+        .mx tr.sel td.t { box-shadow:inset 5px 0 0 var(--accent); font-weight:600; }
+        .mx td.ok { background:var(--ok-bg); color:var(--ok); font-weight:700; font-size:15px; }
+        .mx td.no { background:var(--nok-bg); color:var(--nok); font-weight:700; font-size:15px; }
+        .mx td.pe { background:var(--warn-bg); color:var(--warn); }
+        .mx td.q { color:var(--ok); font-size:15px; }
+        .mx td.f { color:var(--nok); font-weight:600; background:repeating-linear-gradient(135deg,#fff,#fff 5px,#fdecec 5px,#fdecec 10px); }
+        .mx td.s.ok, .mx td.s.no, .mx td.s.pe { font-size:11px; }
+        .mx td.s.pronto { color:var(--accent); }
+        .mx td.s.bloq { color:var(--txt2); }
+        .mx tr.pr td { background:#1a202c; color:#fff; font-weight:600; border-bottom-color:#1a202c; }
+        .mx tr.pr td.c { font-size:11px; padding:5px 8px; }
+        .mx tr.pr td.c.dim { opacity:.35; }
+        .mx tr.pr .qbar { background:rgba(255,255,255,.25); margin-top:3px; }
+        .mx tr.pr .qbar u { background:#fff; }
+        .mx tr.pr .qbar i { background:#fc8181; }
+        .mx tr.pr .qbar.ok i { background:#68d391; }
+        /* mesma simbologia do resto do app: linha esmaecida sem quórum, fundo pelo resultado */
+        .mx tr { scroll-margin-top:40px; scroll-margin-bottom:8px; }
+        .mx tr.it.st-ok > td { background:#e9fbf0; }
+        .mx tr.it.st-no > td { background:#fdecec; }
+        .mx tr.it.st-pe > td { background:#fdfae3; }
+        .mx tr.it.nvot > td { background:#f1f5f9; color:#8899a8; }
+        .mx tr.it > td.ok { background:var(--ok-bg); }
+        .mx tr.it > td.no { background:var(--nok-bg); }
+        .mx tr.it > td.pe { background:var(--warn-bg); }
+        .mx tr.it.nvot > td.f { background:#f1f5f9; color:#cf8f8f; }
+        .mx tr.it.nvot > td.q { color:#9bbfa9; }
+        .mx tr.sel > td { box-shadow:inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+        .mx tr.sel > td.t { box-shadow:inset 5px 0 0 var(--accent), inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+        .mx td.t .badge-res { margin-right:6px; }
+        .mx tr.sp td { background:var(--accent); color:#fff; font-weight:700; text-transform:uppercase; letter-spacing:.5px; font-size:12px; height:28px; }
 
         /* NAV BUTTONS */
         .nav-bar { display:flex; gap:6px; margin-bottom:12px; }
@@ -231,6 +312,26 @@
         .mftr { padding:10px 12px; border-top:1px solid var(--brd); display:flex; justify-content:flex-end; gap:6px; }
         .mftr button { padding:6px 14px; border:1px solid var(--brd); border-radius:4px; font-size:13px; background:#fff; }
         .mftr button.pri { background:var(--accent); color:#fff; border-color:var(--accent); }
+        /* Atualizar pauta (mesclar) */
+        .mg-opts { display:flex; flex-direction:column; gap:4px; margin:8px 0; font-size:13px; }
+        .mg-q { font-weight:700; font-size:13px; color:var(--pri); }
+        .mg-tipo { display:flex; gap:8px; align-items:flex-start; padding:6px 8px; border:1px solid var(--brd); border-radius:6px; cursor:pointer; }
+        .mg-tipo.on { border-color:var(--accent); background:#ebf4ff; }
+        .mg-tipo input { margin-top:3px; flex-shrink:0; }
+        .mg-opts .mg-d { font-size:12px; color:var(--txt2); }
+        .mg-palp { font-size:10px; font-weight:600; background:var(--warn-bg); color:var(--warn); padding:1px 5px; border-radius:3px; }
+        .mg-sec { margin-top:12px; }
+        .mg-sec h4 { font-size:12px; color:var(--pri); margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px; }
+        .mg-li { display:flex; gap:8px; align-items:flex-start; padding:6px 4px; border-bottom:1px solid #edf2f7; font-size:13px; }
+        .mg-li input { margin-top:2px; flex-shrink:0; width:16px; height:16px; }
+        .mg-li .mg-t { font-weight:600; }
+        .mg-li .mg-d { font-size:12px; color:var(--txt2); }
+        .mg-add { color:var(--ok); font-weight:600; }
+        .mg-rm { color:var(--nok); font-weight:600; }
+        .mg-warn { background:var(--warn-bg); color:var(--warn); font-size:12px; padding:5px 8px; border-radius:4px; margin-top:6px; }
+        .mg-none { font-size:13px; color:var(--txt2); padding:10px 0; }
+        .drop-ov { display:none; position:fixed; inset:0; z-index:200; background:rgba(43,108,176,.85); color:#fff; font-size:22px; font-weight:700; align-items:center; justify-content:center; text-align:center; padding:20px; pointer-events:none; }
+        .drop-ov.show { display:flex; }
         .cfgc { margin-bottom:14px; }
         .cfgc h4 { font-size:12px; margin-bottom:4px; color:var(--pri); }
         .cfgm { display:flex; gap:4px; margin-bottom:3px; }
@@ -291,6 +392,10 @@
         <button id="bt-reset" title="Reiniciar">&#8634;</button>
     </div>
     <a class="hdr-btn" href="https://www.saopaulo.sp.leg.br/atividade-legislativa/comissoes/" target="_blank" rel="noopener" title="Quadro de Composição das Comissões — site da Câmara">&#128203; Quadro</a>
+    <button class="hdr-btn" id="bt-prev-hdr" style="display:none" onclick="previaIr()" title="Há uma prévia de presenças em andamento: as marcações ainda não valem. Clique para ir até ela.">&#9998; Prévia em andamento</button>
+    <button class="hdr-btn" id="bt-mx" title="Visão geral: todos os itens × comissões numa tabela">&#9638; Visão geral</button>
+    <button class="hdr-btn" id="bt-atl" title="Atualizar a pauta a partir de um PDF de Congresso ou do texto de importação, sem perder presenças e votos (também dá para arrastar o arquivo para cá)">&#8635; Pauta</button>
+    <input type="file" id="in-atl" accept=".pdf,.md,.txt" multiple style="display:none">
     <button class="hdr-btn" id="bt-cfg">&#9881;</button>
     <button class="hdr-btn" id="bt-novo">Novo</button>
 </header>
@@ -308,6 +413,7 @@
                 <div class="tbar">
                     <button id="bt-pres">+ Presença</button>
                     <button id="bt-pe">+ Pé de Pauta</button>
+                    <button id="bt-sep" title="Insere um separador: daqui para baixo é outro Congresso (presença e comissões convocadas recomeçam)">+ Congresso</button>
                 </div>
                 <div id="st-cong" class="stats"></div>
                 <div id="l-cong" class="lst"></div>
@@ -345,6 +451,18 @@
     </div>
 </div>
 
+<div id="modal-mg" class="modal">
+    <div class="mcard">
+        <div class="mhdr"><h2>Atualizar pauta</h2><button class="bi" onclick="mgFechar()">&#10005;</button></div>
+        <div class="mbody" id="mgbody"></div>
+        <div class="mftr">
+            <button onclick="mgFechar()">Cancelar</button>
+            <button class="pri" id="mg-aplicar" onclick="mgAplicar()">Aplicar</button>
+        </div>
+    </div>
+</div>
+<div id="drop-ov" class="drop-ov">Solte o PDF de Congresso (ou o texto de importação) para atualizar a pauta</div>
+
 <script>
 // ========== COMISSÕES DEFAULT ==========
 const COM_DEF = [
@@ -369,12 +487,16 @@ let coms = [];          // comissões ativas (editáveis)
 let itens = [];         // todos os itens da pauta (ordem original)
 let cong = [];          // ordem do congresso: [{t:'item',iid:'item-5'}, {t:'pres',pid:'p-1'}, ...]
 let pres = {};          // presença: pid -> {titulo, pr:{sigla:[nomes]}}
-let selId = null;       // id selecionado no congresso (iid ou pid)
+let seps = {};          // separadores de congresso: sid -> {id, titulo}; no cong: {t:'sep',sid}
+let nSep = 1;
+let selId = null;       // id selecionado no congresso (iid, pid ou sid)
 let aTab = 'cong';
+let visao = 'det';      // painel principal: 'det' (detalhe do selecionado) | 'mx' (visão geral em matriz)
 let filtro = '';
 let nPres = 2;
 let nItem = 101;
 let notas = '';         // anotações livres sobre o Congresso
+let previa = null;      // prévia de presenças em andamento: {pid, pr, herd, trocas:[{sig,ant,novo,antPres,cP,cV}]}
 let tmr = { tot:75*60, rem:75*60, on:false, id:null, t0:null, el:0 };
 
 // estado da barra de votação simbólica
@@ -405,19 +527,54 @@ function mkPres(n) {
     return { id:'p-'+n, num:n, titulo:'Registro de Presença #'+n, pr:{}, herd:{} };
 }
 function getItem(iid) { return itens.find(i=>i.id===iid); }
+
+// ---- Separador de congressos ----
+// Um separador divide a lista em congressos independentes: presença e comissões
+// convocadas valem só dentro do trecho (entre um separador e o seguinte).
+function congIdx(id) { return cong.findIndex(e=>congEntryId(e)===id); }
+// Trecho [a,b) do congresso a que pertence a entrada idx (se for separador, o trecho que ele abre)
+function segDe(idx) {
+    let a=idx, b=idx+1;
+    if(cong[idx].t==='sep') a=idx+1;
+    else while(a>0 && cong[a-1].t!=='sep') a--;
+    while(b<cong.length && cong[b].t!=='sep') b++;
+    return [a,b];
+}
+function sepLabel(sid) {
+    const s=seps[sid];
+    if(s && s.titulo) return s.titulo;
+    let k=1;
+    for(const e of cong){ if(e.t==='sep'){ k++; if(e.sid===sid) break; } }
+    return k+'º Congresso';
+}
+// Nome do congresso a que pertence a entrada idx
+function nomeCong(idx) {
+    const a=segDe(idx)[0];
+    return a>0 ? sepLabel(cong[a-1].sid) : '1º Congresso';
+}
+// Último registro de presença antes da posição idx, sem atravessar separador
+function presAntes(idx) {
+    for(let i=idx-1;i>=0;i--){
+        if(cong[i].t==='sep') return null;
+        if(cong[i].t==='pres') return pres[cong[i].pid];
+    }
+    return null;
+}
 function isSel(iid) { return cong.some(e=>e.t==='item'&&e.iid===iid); }
 
 // ========== PERSISTÊNCIA ==========
 function save() {
-    try { localStorage.setItem('cong-cmsp', JSON.stringify({coms,itens,cong,pres,selId,aTab,nPres,nItem,notas,tmrRem:tmr.rem})); } catch(e){}
+    try { localStorage.setItem('cong-cmsp', JSON.stringify({coms,itens,cong,pres,seps,nSep,selId,aTab,visao,nPres,nItem,notas,previa,tmrRem:tmr.rem})); } catch(e){}
 }
 function load() {
     try {
         const d=JSON.parse(localStorage.getItem('cong-cmsp'));
         if(!d||!d.itens) return false;
         coms=d.coms; itens=d.itens; cong=d.cong; pres=d.pres;
-        selId=d.selId; aTab=d.aTab||'cong'; nPres=d.nPres||2; nItem=d.nItem||101;
+        selId=d.selId; aTab=d.aTab||'cong'; visao=d.visao==='mx'?'mx':'det'; nPres=d.nPres||2; nItem=d.nItem||101;
         notas=d.notas||'';
+        seps=d.seps||{}; nSep=d.nSep||1;
+        previa=(d.previa&&pres[d.previa.pid])?d.previa:null;
         tmr.rem=d.tmrRem!=null?d.tmrRem:75*60;
         return true;
     } catch(e){ return false; }
@@ -425,6 +582,7 @@ function load() {
 
 // ========== RENDER ==========
 function render() {
+    renderPreviaHdr();
     renderTabs();
     renderCong();
     renderItens();
@@ -463,10 +621,15 @@ function renderCong() {
     cong.forEach((e,i)=>{
         if(e.t==='pres'){
             const p=pres[e.pid];
-            h+='<div class="ent pres'+(selId===e.pid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.pid+'\',\'pres\')">' +
+            h+='<div class="ent pres'+(emPrevia(e.pid)?' prev':'')+(selId===e.pid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.pid+'\',\'pres\')">' +
                '<span class="drag-handle">&#10495;</span>' +
-               '<span class="et">'+esc(p.titulo)+'</span>' +
+               '<span class="et">'+esc(p.titulo)+(emPrevia(e.pid)?' <span class="badge-prev">PRÉVIA</span>':'')+'</span>' +
                '<button class="bi rm" onclick="event.stopPropagation();rmPres(\''+e.pid+'\')">&#10005;</button></div>';
+        } else if(e.t==='sep'){
+            h+='<div class="ent sep'+(selId===e.sid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.sid+'\',\'sep\')">' +
+               '<span class="drag-handle">&#10495;</span>' +
+               '<span class="et">'+esc(sepLabel(e.sid))+'</span>' +
+               '<button class="bi rm" onclick="event.stopPropagation();rmSep(\''+e.sid+'\')" title="Remover separador">&#10005;</button></div>';
         } else {
             const it=getItem(e.iid); if(!it) return;
             const vt=votavel(it);
@@ -529,7 +692,7 @@ function renderComsTab() {
 
 // ---- Navegação prev/next no congresso ----
 function getCongNav(id) {
-    const idx = cong.findIndex(e => (e.t==='item' && e.iid===id) || (e.t==='pres' && e.pid===id));
+    const idx = congIdx(id);
     if (idx < 0) return { prev:null, next:null };
     const prev = idx > 0 ? cong[idx-1] : null;
     const next = idx < cong.length-1 ? cong[idx+1] : null;
@@ -537,10 +700,11 @@ function getCongNav(id) {
 }
 function congEntryLabel(e) {
     if (e.t==='pres') { const p=pres[e.pid]; return p ? p.titulo : '?'; }
+    if (e.t==='sep') return sepLabel(e.sid);
     const it=getItem(e.iid); return it ? it.tit : '?';
 }
-function congEntryId(e) { return e.t==='pres' ? e.pid : e.iid; }
-function congEntryType(e) { return e.t==='pres' ? 'pres' : 'item'; }
+function congEntryId(e) { return e.t==='pres' ? e.pid : e.t==='sep' ? e.sid : e.iid; }
+function congEntryType(e) { return e.t==='pres' ? 'pres' : e.t==='sep' ? 'sep' : 'item'; }
 
 function renderNavBar(id) {
     const nav = getCongNav(id);
@@ -566,33 +730,208 @@ function renderDet() {
     const el=document.getElementById('det');
     const main=document.getElementById('main');
     if(main) main.classList.remove('st-ok','st-no','st-pe');
+    const bmx=document.getElementById('bt-mx'); if(bmx) bmx.classList.toggle('ativo', visao==='mx');
+    if(visao==='mx'){ renderMatriz(el); return; }
     if(!selId){ el.innerHTML='<div class="ph">Selecione um item.</div>'; return; }
     // É presença?
     if(pres[selId]) { renderDetPres(el, pres[selId]); return; }
+    if(seps[selId]) { renderDetSep(el, seps[selId]); return; }
     // É item?
     const it=getItem(selId);
     if(it) { renderDetItem(el, it); return; }
     el.innerHTML='<div class="ph">Não encontrado.</div>';
 }
 
+// Barra de quórum: preenchimento = presentes sobre o total; traço = onde está o quórum
+function qbarHtml(n, total) {
+    if(!total) return '';
+    const q=Math.floor(total/2)+1;
+    return '<span class="qbar'+(n>=q?' ok':'')+'" title="'+n+' de '+total+' presentes; quórum: '+q+'">' +
+           '<i style="width:'+Math.min(100,n/total*100)+'%"></i><u style="left:'+(q/total*100)+'%"></u></span>';
+}
+
+// Visão geral: uma linha por entrada do congresso, uma coluna por comissão
+function toggleMatriz() {
+    visao = visao==='mx' ? 'det' : 'mx';
+    document.getElementById('main').classList.add('on');
+    save(); render();
+    document.getElementById('main').scrollTop=0;
+}
+function renderMatriz(el) {
+    let h='<div class="det"><h2>Visão geral</h2>' +
+          '<p class="hint">Uma linha por item, uma coluna por comissão. &#9675; tem quórum &middot; "falta N" = quantos presentes faltam para o quórum &middot; &#10003; favorável &middot; &#10007; contrária.<br>' +
+          '&#8593;&#8595; escolhe o item &middot; Espaço apregoa/desapregoa &middot; Enter ou duplo clique abre o item &middot; clique seleciona.</p>';
+    if(!cong.length){ el.innerHTML=h+'<div class="ph">Nenhum item no Congresso.</div></div>'; return; }
+    // guarda a rolagem da tabela para o re-render não voltar ao topo
+    const wAnt=el.querySelector('.mx-wrap'); const rolAnt=wAnt?wAnt.scrollTop:0;
+    h+='<div class="mx-wrap"><table class="mx"><thead><tr><th class="t">Item</th>' +
+       coms.map(c=>'<th title="'+ea(c.nome)+'">'+c.sigla+'</th>').join('')+'<th>Situação</th></tr></thead><tbody>';
+    cong.forEach(e=>{
+        if(e.t==='sep'){
+            h+='<tr class="sp" ondblclick="sel(\''+e.sid+'\',\'sep\')"><td colspan="'+(coms.length+2)+'">'+esc(sepLabel(e.sid))+'</td></tr>';
+            return;
+        }
+        if(e.t==='pres'){
+            const p=pres[e.pid], conv=getConvocadas(e.pid); let cq=0;
+            const cels=coms.map(c=>{
+                const n=(p.pr[c.sigla]||[]).length, tot=c.membros.length, on=conv.has(c.sigla);
+                if(on && n>=Math.floor(tot/2)+1) cq++;
+                return '<td class="c'+(on?'':' dim')+'"'+(on?'':' title="Não convocada neste congresso"')+'>'+n+'/'+tot+qbarHtml(n,tot)+'</td>';
+            }).join('');
+            const abre=cq>conv.size/2;
+            const pv=emPrevia(e.pid);
+            h+='<tr class="pr'+(pv?' prev':'')+(selId===e.pid?' sel':'')+'" data-mx="'+e.pid+'" onclick="mxSel(\''+e.pid+'\')" ondblclick="sel(\''+e.pid+'\',\'pres\')"><td class="t">'+esc(p.titulo)+(pv?' <span class="badge-prev">PRÉVIA</span>':'')+'</td>'+cels +
+               '<td class="s">'+(conv.size?(pv?(abre?'Poderia abrir':'Não poderia abrir'):(abre?'Pode abrir':'Não pode abrir')):'')+'</td></tr>';
+            return;
+        }
+        const it=getItem(e.iid); if(!it) return;
+        const ef=getPresEf(it.id);
+        const cels=coms.map(c=>{
+            if(!it.cAtv.includes(c.sigla)) return '<td class="c"></td>';
+            const pr=ef[c.sigla]||[], q=Math.floor(c.membros.length/2)+1;
+            if(pr.length<q) return '<td class="c f" title="'+pr.length+' de '+c.membros.length+' presentes; quórum: '+q+'">falta '+(q-pr.length)+'</td>';
+            if(!it.apregoado) return '<td class="c q" title="Tem quórum">&#9675;</td>';
+            const r=resComissao(it,c.sigla,pr);
+            const tt=r.sim+'S / '+r.nao+'N / '+r.abst+'A';
+            return r.res==='ok' ? '<td class="c ok" title="Favorável ('+tt+')">&#10003;</td>'
+                 : r.res==='no' ? '<td class="c no" title="Contrária ('+tt+')">&#10007;</td>'
+                 : '<td class="c pe" title="'+tt+'">pendente</td>';
+        }).join('');
+        // Mesma simbologia da lista lateral e do detalhe: esmaecido sem quórum (ou sem comissões);
+        // depois de apregoado, fundo verde/vermelho/amarelo pelo resultado e o selo antes do título.
+        let st, cls, linha='', selo='';
+        if(it.cAtv.length && it.apregoado){
+            const r=calcRes(it); cls=r; linha=' st-'+r;
+            st=r==='ok'?'APROVADO':r==='no'?'REJEITADO':'PENDENTE';
+            selo=r==='ok'?'<span class="badge-res ok" title="Aprovado">&#10003;</span>':r==='no'?'<span class="badge-res no" title="Rejeitado">&#10007;</span>':'<span class="badge-res pe" title="Apregoado, pendente">&#9680;</span>';
+        }
+        else if(!it.cAtv.length){ st='sem comissões'; cls='bloq'; linha=' nvot'; }
+        else if(votavel(it)){ st='Pronto para votar'; cls='pronto'; }
+        else { st='Sem quórum'; cls='bloq'; linha=' nvot'; }
+        h+='<tr class="it'+linha+(selId===it.id?' sel':'')+'" data-mx="'+it.id+'" onclick="mxSel(\''+it.id+'\')" ondblclick="sel(\''+it.id+'\',\'item\')"><td class="t" title="'+ea(it.tit)+'">'+selo+esc(it.tit) +
+           (it.pe?' <span class="badge-pe">PÉ</span>':'')+'</td>'+cels+'<td class="s '+cls+'">'+st+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+    el.innerHTML=h;
+    const w=el.querySelector('.mx-wrap'); if(w) w.scrollTop=rolAnt;
+    if(mxRolar){ mxRolar=false; const tr=el.querySelector('tr.sel'); if(tr) tr.scrollIntoView({block:'nearest'}); }
+}
+
+// ---- Visão geral: seleção e teclado ----
+let mxRolar=false;   // rolar até a linha selecionada no próximo render (só quando a seleção muda pelo teclado)
+// Clique: só troca o destaque (sem refazer a tabela, para o duplo clique continuar valendo)
+function mxSel(id) {
+    selId=id; save();
+    renderCong(); renderItens(); renderComsTab();
+    document.querySelectorAll('.mx tr.sel').forEach(tr=>tr.classList.remove('sel'));
+    const tr=document.querySelector('.mx tr[data-mx="'+id+'"]'); if(tr) tr.classList.add('sel');
+}
+// ↑↓ andam pelos itens (pulando presenças e separadores); Espaço apregoa; Enter abre
+function mxTecla(e) {
+    if(visao!=='mx' || e.ctrlKey || e.altKey || e.metaKey) return;
+    if(document.querySelector('.modal.show')) return;
+    const tg=e.target, tag=tg&&tg.tagName;
+    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+    const k=e.key;
+    if(k!=='ArrowDown'&&k!=='ArrowUp'&&k!==' '&&k!=='Enter') return;
+    const its=cong.filter(x=>x.t==='item').map(x=>x.iid);
+    if(!its.length) return;
+    e.preventDefault();
+    if(tag==='BUTTON') tg.blur();   // senão o Espaço/Enter também "clicaria" o botão em foco
+    if(k==='ArrowDown'||k==='ArrowUp'){
+        const dir=k==='ArrowDown'?1:-1;
+        const pos=congIdx(selId);
+        let novo;
+        if(pos<0) novo=dir>0?its[0]:its[its.length-1];
+        else {
+            novo=selId;
+            for(let i=pos+dir;i>=0&&i<cong.length;i+=dir){ if(cong[i].t==='item'){ novo=cong[i].iid; break; } }
+            if(novo===selId && cong[pos].t!=='item') novo=dir>0?its[its.length-1]:its[0];
+        }
+        selId=novo; mxRolar=true; save(); render();
+        return;
+    }
+    const it=getItem(selId);
+    if(!it || !isSel(it.id)) return;
+    if(k===' ') togApregoado(it.id);
+    else sel(it.id,'item');
+}
+
+function renderDetSep(el, s) {
+    const i=congIdx(s.id);
+    let h=renderNavBar(s.id);
+    h+='<div class="det"><h2>'+esc(sepLabel(s.id))+'</h2>' +
+       '<p class="hint">Separador de congressos: daqui para baixo (até o próximo separador) é outro Congresso. A presença não passa de um para o outro — é preciso um novo registro de presença — e as comissões convocadas são contadas só pelos itens deste trecho.</p>' +
+       '<div class="fg"><label>Título</label><input value="'+ea(s.titulo||'')+'" placeholder="'+ea(sepLabel(s.id))+'" onchange="setSepTit(\''+s.id+'\',this.value)"></div>';
+    if(i>-1){
+        const [a,b]=segDe(i);
+        let nIt=0, temPres=false;
+        for(let k=a;k<b;k++){ if(cong[k].t==='item') nIt++; else if(cong[k].t==='pres') temPres=true; }
+        const conv=[...getConvocadas(s.id)];
+        h+='<div class="res"><h3>Este Congresso</h3><p>Itens: '+nIt+' | Comissões convocadas: '+(conv.length?conv.join(', '):'nenhuma')+'</p>' +
+           (temPres?'':'<p class="rs no">Ainda sem registro de presença</p><div class="pa"><button onclick="addPres()">+ Presença</button></div>') +
+           '</div>';
+    }
+    h+='</div>';
+    el.innerHTML=h;
+}
+
+// Onde mais o vereador já deu presença: em outra comissão deste registro (está na casa agora),
+// ou em outro registro/congresso. Usado no dropdown de substituições.
+function presencaInfo(p, nome) {
+    const aqui=coms.filter(c=>(p.pr[c.sigla]||[]).includes(nome)).map(c=>c.sigla);
+    if(aqui.length) return { ord:0, txt:'✓ presente ('+aqui.join(', ')+')' };
+    const ip=congIdx(p.id);
+    const segP=ip>-1?segDe(ip)[0]:-1;
+    const onde=[];
+    cong.forEach((e,i)=>{
+        if(e.t!=='pres'||e.pid===p.id) return;
+        const o=pres[e.pid];
+        if(!o||!Object.values(o.pr).some(l=>l.includes(nome))) return;
+        const lb = segDe(i)[0]===segP ? 'Presença #'+o.num : nomeCong(i);
+        if(!onde.includes(lb)) onde.push(lb);
+    });
+    if(onde.length) return { ord:1, txt:'deu presença em: '+onde.join(', ') };
+    return { ord:2, txt:'' };
+}
+
+// Opções do dropdown de substituição, em dois grupos: quem é membro de outra comissão
+// convocada neste Congresso (vai ser necessário lá também) e os demais.
+// Dentro de cada grupo, quem já deu presença vem primeiro.
+function swapOptsHtml(p, c, trocas, conv) {
+    const lst=trocas.map(t=>({
+        t, inf:presencaInfo(p,t),
+        outras:coms.filter(o=>o!==c && conv.has(o.sigla) && o.membros.includes(t)).map(o=>o.sigla)
+    })).sort((x,y)=>x.inf.ord-y.inf.ord);
+    const opt=o=>'<option value="'+ea(o.t)+'">'+esc(o.t+(o.outras.length?' — membro: '+o.outras.join(', '):'')+(o.inf.txt?' — '+o.inf.txt:''))+'</option>';
+    const em=lst.filter(o=>o.outras.length), fora=lst.filter(o=>!o.outras.length);
+    if(!em.length) return fora.map(opt).join('');
+    return '<optgroup label="Em outra comissão deste Congresso">'+em.map(opt).join('')+'</optgroup>' +
+           (fora.length?'<optgroup label="Demais">'+fora.map(opt).join('')+'</optgroup>':'');
+}
+
 function renderDetPres(el, p) {
+    const pv=emPrevia(p.id);
     let h=renderNavBar(p.id);
-    h+='<div class="det"><h2>'+esc(p.titulo)+'</h2>' +
+    h+='<div class="det'+(pv?' em-prev':'')+'"><h2>'+esc(p.titulo)+(pv?' <span class="badge-prev">PRÉVIA</span>':'')+'</h2>' +
+        previaBoxHtml(p) +
         '<p class="hint">Marque os presentes. <span class="lg-nova">verde</span> = marcado neste registro; <span class="lg-herd">azul</span> = herdado do registro anterior.</p>' +
         '<div class="pa"><button onclick="presAll(\''+p.id+'\',true)">Todos presentes</button>' +
         '<button onclick="presAll(\''+p.id+'\',false)">Todos ausentes</button></div>';
 
-    // Resumo abertura
-    const conv = getConvocadas();
+    // Resumo abertura (só as comissões convocadas pelos itens deste congresso)
+    const conv = getConvocadas(p.id);
     let cq=0;
+    h+='<div class="cgrid">';
     coms.forEach(c=>{
         if(!conv.has(c.sigla)) return;
         const pr=p.pr[c.sigla]||[];
         const q=Math.floor(c.membros.length/2)+1;
         const ok=pr.length>=q;
         if(ok) cq++;
-        h+='<div class="pc '+(ok?'st-ok':'st-no')+'"><div class="pch"><span>'+c.sigla+'</span>' +
-           '<span class="qb '+(ok?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+(ok?' ✓':' ✗')+'</span></div>' +
+        h+='<div class="pc '+(ok?'st-ok':'st-no')+'"><div class="pch" title="'+ea(c.nome)+'"><span>'+c.sigla+'</span>' +
+           qbarHtml(pr.length,c.membros.length) +
+           '<span class="qb '+(ok?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+(ok?' ✓':' · falta '+(q-pr.length))+'</span></div>' +
            '<div class="pcb"><div class="mg">';
         const ci=coms.indexOf(c);
         c.membros.forEach((m,mi)=>{
@@ -606,7 +945,7 @@ function renderDetPres(el, p) {
                     'onclick="event.preventDefault();event.stopPropagation()" ' +
                     'onchange="swapMem(\''+p.id+'\','+ci+','+mi+',this.value)">' +
                     '<option value="">&#8644;</option>' +
-                    trocas.map(t=>'<option value="'+ea(t)+'">'+esc(t)+'</option>').join('') +
+                    swapOptsHtml(p, c, trocas, conv) +
                     '</select>';
             }
             h+='<label class="'+mcCls+'"><input type="checkbox" '+(checked?'checked':'')+
@@ -614,13 +953,14 @@ function renderDetPres(el, p) {
         });
         h+='</div></div></div>';
     });
+    h+='</div>';
 
     if(conv.size>0){
         const abre=cq>conv.size/2;
         const main=document.getElementById('main');
         if(main){ main.classList.remove('st-ok','st-no','st-pe'); main.classList.add(abre?'st-ok':'st-no'); }
-        h+='<div class="res"><h3>Abertura</h3><p>Comissões convocadas com quórum: '+cq+'/'+conv.size+'</p>' +
-           '<p class="rs '+(abre?'ok':'no')+'">Congresso '+(abre?'pode abrir':'NÃO pode abrir')+'</p></div>';
+        h+='<div class="res"><h3>Abertura'+(pv?' (prévia)':'')+'</h3><p>Comissões convocadas com quórum: '+cq+'/'+conv.size+'</p>' +
+           '<p class="rs '+(abre?'ok':'no')+'">'+(pv?'Com o que está marcado, o Congresso '+(abre?'poderia abrir':'NÃO poderia abrir'):'Congresso '+(abre?'pode abrir':'NÃO pode abrir'))+'</p></div>';
     }
     h+='</div>';
     el.innerHTML=h;
@@ -646,18 +986,26 @@ function renderDetItem(el, it) {
     h+='<div class="fg"><label>Descrição</label><textarea rows="2" onchange="setDesc(\''+it.id+'\',this.value)">'+esc(it.desc)+'</textarea></div>';
 
     h+='<h3>Comissões</h3>';
+    // As comissões do item ficam lado a lado, em colunas; as que não participam viram
+    // uma linha compacta de caixas de seleção embaixo.
+    const hAntes=h; let hOff=''; h='';
     coms.forEach((c,ci)=>{
         const at=it.cAtv.includes(c.sigla);
+        if(!at){
+            hOff+='<label title="'+ea(c.nome)+'"><input type="checkbox" onchange="togCom(\''+it.id+'\',\''+c.sigla+'\')"> '+c.sigla+'</label>';
+            return;
+        }
         const pr=ef[c.sigla]||[];
         const q=Math.floor(c.membros.length/2)+1;
         const qOk=pr.length>=q;
         let stCls='';
         if(at&&it.apregoado){ const rvc=resComissao(it,c.sigla,pr); stCls=rvc.res==='ok'?' st-ok':rvc.res==='no'?' st-no':' st-pe'; }
 
-        h+='<div class="cc '+(at?'ativo':'off')+stCls+'"><div class="cch">' +
+        h+='<div class="cc '+(at?'ativo':'off')+stCls+'"><div class="cch" title="'+ea(c.nome)+'">' +
            '<label><input type="checkbox" '+(at?'checked':'')+' onchange="togCom(\''+it.id+'\',\''+c.sigla+'\')"> '+
            c.sigla+' <span class="cnm">'+esc(c.nome)+'</span></label>' +
-           (at?'<span class="qb '+(qOk?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+'</span>':'') +
+           qbarHtml(pr.length,c.membros.length) +
+           '<span class="qb '+(qOk?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+(qOk?'':' · falta '+(q-pr.length))+'</span>' +
            '</div>';
 
         if(at){
@@ -691,6 +1039,8 @@ function renderDetItem(el, it) {
         }
         h+='</div>';
     });
+    h = hAntes + (h ? '<div class="cgrid">'+h+'</div>' : '<p class="hint">Nenhuma comissão marcada para este item.</p>') +
+        (hOff ? '<div class="cc-offs"><span>'+(it.cAtv.length?'Não participam:':'Marque as que dão parecer:')+'</span>'+hOff+'</div>' : '');
 
     // Resultado geral
     if(it.cAtv.length>0){
@@ -743,8 +1093,8 @@ function vereadorComsAtivas(it, nome){
 function presEfRef(iid){
     const idx=cong.findIndex(e=>e.t==='item'&&e.iid===iid);
     if(idx<0) return null;
-    for(let i=idx-1;i>=0;i--){ if(cong[i].t==='pres') return pres[cong[i].pid].pr; }
-    return null;
+    const p=presAntes(idx);
+    return p ? p.pr : null;
 }
 
 // Garante que o vereador conste como presente na comissão (para o voto contar no placar)
@@ -922,7 +1272,9 @@ function trocasPossiveis(c, nome){
 function swapMem(pid, ci, mi, novo){
     if(!novo) return;
     const c=coms[ci]; const ant=c.membros[mi]; const sig=c.sigla;
-    if(!confirm('Trocar '+ant+' por '+novo+' na '+sig+'?')){ render(); return; }
+    const pv=emPrevia(pid);   // na prévia a troca é de teste: sem confirmação e sem anotar (desfaz-se com um clique)
+    if(!pv && !confirm('Trocar '+ant+' por '+novo+' na '+sig+'?')){ render(); return; }
+    if(pv) previa.trocas.push({ sig, ant, novo, antPres:!!(pres[pid].pr[sig]||[]).includes(ant), cP:c.pres===ant, cV:c.vice===ant });
     c.membros[mi]=novo;
     if(c.pres===ant) c.pres=null;
     if(c.vice===ant) c.vice=null;
@@ -933,11 +1285,90 @@ function swapMem(pid, ci, mi, novo){
         if(i>-1) p.pr[sig].splice(i,1);
         if(!p.pr[sig].includes(novo)) p.pr[sig].push(novo);
     }
+    if(!pv) anotarTroca(sig, ant, novo);
+    save(); render();
+}
+function anotarTroca(sig, ant, novo){
     const d=new Date();
     const hora=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
     notas=(notas?notas+'\n':'')+'Troca '+sig+' ('+hora+'): '+ant+' → '+novo;
+}
+
+// ========== PRÉVIA DE PRESENÇAS ==========
+// Antes de abrir o Congresso: marcar quem já chegou e testar substituições num registro de
+// presença, podendo depois descartar tudo, ficar só com as presenças ou valer tudo.
+// Guarda o registro como estava ao começar e a lista das trocas feitas (para desfazê-las).
+function emPrevia(pid){ return !!previa && previa.pid===pid; }
+function previaIniciar(pid){
+    const p=pres[pid]; if(!p) return;
+    if(previa && pres[previa.pid]) return;
+    previa={ pid, pr:JSON.parse(JSON.stringify(p.pr||{})), herd:JSON.parse(JSON.stringify(p.herd||{})), trocas:[] };
     save(); render();
 }
+// Desfaz uma troca de teste: o titular volta à comissão (com o cargo e a presença que tinha)
+function previaReverter(t){
+    const c=coms.find(x=>x.sigla===t.sig); if(!c) return false;
+    const mi=c.membros.indexOf(t.novo); if(mi<0) return false;
+    c.membros[mi]=t.ant;
+    if(t.cP && !c.pres) c.pres=t.ant;
+    if(t.cV && !c.vice) c.vice=t.ant;
+    const p=pres[previa.pid];
+    if(p){
+        const l=(p.pr[t.sig]||[]).filter(n=>n!==t.novo);
+        if(t.antPres && !l.includes(t.ant)) l.push(t.ant);
+        p.pr[t.sig]=l;
+    }
+    return true;
+}
+function previaPodeDesfazer(t){ const c=coms.find(x=>x.sigla===t.sig); return !!c && c.membros.includes(t.novo); }
+function previaDesfazTroca(i){
+    if(!previa) return;
+    const t=previa.trocas[i];
+    if(t && previaReverter(t)) previa.trocas.splice(i,1);
+    save(); render();
+}
+function previaDesfazTrocas(){ for(let i=previa.trocas.length-1;i>=0;i--) previaReverter(previa.trocas[i]); }
+// modo: 'descartar' (volta ao que era) | 'pres' (ficam as presenças, saem as trocas) | 'tudo' (vale tudo)
+function previaEncerrar(modo){
+    if(!previa) return;
+    const p=pres[previa.pid];
+    if(modo==='tudo') previa.trocas.forEach(t=>{ if(previaPodeDesfazer(t)) anotarTroca(t.sig, t.ant, t.novo); });
+    else {
+        previaDesfazTrocas();
+        if(modo==='descartar' && p){ p.pr=previa.pr; p.herd=previa.herd; }
+    }
+    previa=null;
+    save(); render();
+}
+function previaBoxHtml(p){
+    if(!emPrevia(p.id)){
+        const outra=previa && pres[previa.pid];
+        return '<div class="pa"><button class="bt-prev" '+(outra?'disabled title="Já há uma prévia em andamento em '+ea(pres[previa.pid].titulo)+'"':'title="Marcar quem já chegou e testar substituições sem compromisso: dá para descartar tudo depois"')+
+               ' onclick="previaIniciar(\''+p.id+'\')">&#9998; Fazer prévia das presenças</button></div>';
+    }
+    let h='<div class="prev-box"><b>Prévia em andamento.</b> Marque quem você já vê e teste substituições à vontade: as trocas feitas aqui não pedem confirmação nem vão para as Anotações. Enquanto a prévia durar, os itens abaixo deste registro contam o quórum com estas marcações.';
+    if(previa.trocas.length){
+        h+='<div class="prev-tr">Substituições em teste:';
+        previa.trocas.forEach((t,i)=>{
+            h+='<div><span>'+t.sig+': '+esc(t.ant)+' &rarr; '+esc(t.novo)+'</span>'+
+               (previaPodeDesfazer(t)?'<button onclick="previaDesfazTroca('+i+')">desfazer</button>':'')+'</div>';
+        });
+        h+='</div>';
+    }
+    const temTr=previa.trocas.length>0;
+    h+='<div class="prev-ac">' +
+       '<button onclick="previaEncerrar(\'descartar\')" title="O registro e as comissões voltam a ser como eram antes da prévia">Descartar a prévia</button>' +
+       (temTr?'<button onclick="previaEncerrar(\'pres\')" title="Ficam marcados os presentes; as substituições em teste são desfeitas">Valer só as presenças</button>':'') +
+       '<button class="pri" onclick="previaEncerrar(\'tudo\')" title="'+(temTr?'Presenças e substituições passam a valer; as trocas são anotadas nas Anotações':'As presenças marcadas passam a valer')+'">'+(temTr?'Valer tudo (presenças e trocas)':'Valer como presença real')+'</button>' +
+       '</div></div>';
+    return h;
+}
+function renderPreviaHdr(){
+    if(previa && !pres[previa.pid]) previa=null;
+    const b=document.getElementById('bt-prev-hdr'); if(!b) return;
+    b.style.display=previa?'':'none';
+}
+function previaIr(){ if(previa) sel(previa.pid,'pres'); }
 
 // ========== LINK SPLEGIS ==========
 // Extrai "PL 123/2026" do título/descrição do item e monta os links do SPLegis
@@ -954,13 +1385,12 @@ function splegisLinks(it){
 
 // ========== LÓGICA ==========
 function getPresEf(iid) {
-    // Presença efetiva: última presença ANTES deste item na ordem do congresso
+    // Presença efetiva: última presença ANTES deste item na ordem do congresso,
+    // sem atravessar separador (cada congresso tem a sua presença)
     const idx=cong.findIndex(e=>e.t==='item'&&e.iid===iid);
     if(idx<0) return {};
-    for(let i=idx-1;i>=0;i--){
-        if(cong[i].t==='pres') return pres[cong[i].pid].pr;
-    }
-    return {};
+    const p=presAntes(idx);
+    return p ? p.pr : {};
 }
 
 function resComissao(it, sigla, presentes) {
@@ -1004,15 +1434,23 @@ function votavel(it) {
     return cq>it.cAtv.length/2;
 }
 
-function getConvocadas() {
+// Comissões convocadas. Com id (de uma entrada do congresso), só as do congresso
+// (trecho entre separadores) a que a entrada pertence; sem id, de toda a lista.
+function getConvocadas(id) {
+    let a=0, b=cong.length;
+    if(id!=null){ const i=congIdx(id); if(i>-1){ const sg=segDe(i); a=sg[0]; b=sg[1]; } }
     const s=new Set();
-    cong.forEach(e=>{ if(e.t==='item'){ const it=getItem(e.iid); if(it) it.cAtv.forEach(c=>s.add(c)); } });
+    for(let i=a;i<b;i++){
+        const e=cong[i];
+        if(e.t==='item'){ const it=getItem(e.iid); if(it) it.cAtv.forEach(c=>s.add(c)); }
+    }
     return s;
 }
 
 // ========== AÇÕES ==========
 function sel(id, tipo) {
     selId=id;
+    visao='det';
     document.getElementById('main').classList.add('on');
     // ao abrir um item, joga o foco para a barra de votos (só em desktop,
     // para não abrir o teclado virtual no celular/tablet)
@@ -1080,8 +1518,10 @@ function moverFim(iid) {
 function addPres() {
     const n=nPres++;
     const p=mkPres(n);
-    // herdar da presença anterior mais próxima
-    const prevPres = findPrevPres();
+    // inserir após a entrada selecionada no congresso, ou no final
+    const ins=posInsercao();
+    // herdar da presença anterior mais próxima do mesmo congresso (não atravessa separador)
+    const prevPres = presAntes(ins);
     if(prevPres) {
         coms.forEach(c=>{
             p.pr[c.sigla] = prevPres.pr[c.sigla] ? [...prevPres.pr[c.sigla]] : [];
@@ -1089,26 +1529,41 @@ function addPres() {
         });
     }
     pres[p.id]=p;
-    // inserir após o item selecionado no congresso, ou no final
-    if(selId) {
-        const idx=cong.findIndex(e=>(e.t==='item'&&e.iid===selId)||(e.t==='pres'&&e.pid===selId));
-        if(idx>-1) { cong.splice(idx+1,0,{t:'pres',pid:p.id}); }
-        else cong.push({t:'pres',pid:p.id});
-    } else { cong.push({t:'pres',pid:p.id}); }
+    cong.splice(ins,0,{t:'pres',pid:p.id});
     selId=p.id;
     save(); render();
 }
 
-function findPrevPres() {
-    // última presença no congresso
-    for(let i=cong.length-1;i>=0;i--){
-        if(cong[i].t==='pres') return pres[cong[i].pid];
-    }
-    return null;
+// Posição de inserção de presença/separador: logo após a entrada selecionada, ou no final
+function posInsercao() {
+    const idx=selId?congIdx(selId):-1;
+    return idx>-1 ? idx+1 : cong.length;
+}
+
+function addSep() {
+    const s={ id:'s-'+(nSep++), titulo:'' };
+    seps[s.id]=s;
+    cong.splice(posInsercao(),0,{t:'sep',sid:s.id});
+    selId=s.id;
+    save(); render();
+}
+
+function rmSep(sid) {
+    if(!confirm('Remover o separador "'+sepLabel(sid)+'"? Os itens abaixo voltam a fazer parte do congresso anterior.')) return;
+    cong=cong.filter(e=>!(e.t==='sep'&&e.sid===sid));
+    delete seps[sid];
+    if(selId===sid) selId=null;
+    save(); render();
+}
+
+function setSepTit(sid, v) {
+    if(seps[sid]) seps[sid].titulo=v.trim();
+    save(); render();
 }
 
 function rmPres(pid) {
     cong=cong.filter(e=>!(e.t==='pres'&&e.pid===pid));
+    if(emPrevia(pid)){ previaDesfazTrocas(); previa=null; }
     delete pres[pid];
     if(selId===pid) selId=null;
     save(); render();
@@ -1196,7 +1651,8 @@ function renderCfg() {
         '<textarea id="cfg-txt-area" spellcheck="false">' + esc(exportState()) + '</textarea>' +
         '<p class="hint">Copie este texto para compartilhar as configurações (comissões, itens, presenças e votos). Para importar, cole o texto e clique em Aplicar.</p>' +
         '<div class="btn-row"><button onclick="copiarTxt()">Copiar</button>' +
-        '<button class="pri" onclick="aplicarTxt()">Aplicar</button></div>' +
+        '<button class="pri" onclick="aplicarTxt()" title="Substitui todos os dados atuais pelo texto">Aplicar (substitui tudo)</button>' +
+        '<button onclick="mesclarTxt()" title="Só acrescenta/ajusta itens da pauta; presenças e votos ficam como estão">Atualizar pauta (mesclar)</button></div>' +
         '<div id="cfg-txt-msg" class="msg"></div></details>';
     coms.forEach((c,ci)=>{
         h+='<div class="cfgc"><h4>'+c.sigla+' ('+c.membros.length+') — '+esc(c.nome)+'</h4>';
@@ -1269,6 +1725,9 @@ function exportState() {
                     const pr = p.pr[c.sigla] || [];
                     if (pr.length > 0) txt += '\n' + c.sigla + ': ' + pr.join('; ');
                 });
+            } else if (e.t === 'sep') {
+                const s = seps[e.sid];
+                txt += 'SEPARADOR' + (s && s.titulo ? ' | ' + s.titulo : '');
             } else {
                 const it = getItem(e.iid);
                 if (!it) return;
@@ -1366,6 +1825,9 @@ function importState(txt) {
     for (let i = 1; i <= 100; i++) itens.push(mkItem(i));
     cong = [];
     pres = {};
+    previa = null;
+    seps = {};
+    nSep = 1;
     nPres = 2;
     nItem = 101;
     notas = notasImport.replace(/^\n+/, '').trimEnd();
@@ -1373,6 +1835,15 @@ function importState(txt) {
     // --- Parsear congresso ---
     for (const bl of blocks.cong) {
         const header = bl[0];
+
+        // Separador de congressos: "SEPARADOR" ou "SEPARADOR | Título"
+        const sepMatch = header.match(/^SEPARADOR(?:\s*\|\s*(.*))?$/i);
+        if (sepMatch) {
+            const s = { id: 's-' + (nSep++), titulo: (sepMatch[1] || '').trim() };
+            seps[s.id] = s;
+            cong.push({ t: 'sep', sid: s.id });
+            continue;
+        }
 
         // Presença
         const presMatch = header.match(/^PRESEN[CÇ]A\s*#(\d+)$/i);
@@ -1480,6 +1951,396 @@ function copiarTxt() {
     });
 }
 
+// ========== ATUALIZAR PAUTA (MESCLAR) ==========
+// Em vez de substituir tudo, compara uma lista de itens recebida (PDF de Congresso do SGP2
+// ou texto de importação) com a pauta atual e aplica só as diferenças escolhidas.
+// Os itens são casados pelo projeto ("PL 775/2026"), não pelo número na pauta.
+// Presenças, votos, apregoados, ordem e separadores não são tocados.
+const PROJ_RE = /\b(PL|PDL|PR|PLO)\s*(?:n[ºo.]?\s*)?0*(\d+)\s*\/\s*(\d{4})\b/i;
+function projKey(s) {
+    const m=(s||'').match(PROJ_RE);
+    return m ? m[1].toUpperCase()+' '+parseInt(m[2])+'/'+m[3] : '';
+}
+function itemKey(it) { return projKey(it.tit) || projKey(it.desc); }
+function itemPlaceholder(it) { return /^(Item|Pé)\s+\d+$/.test((it.tit||'').trim()); }
+
+// ---- Leitura do texto de importação (só os blocos ITEM) ----
+function parseItensTxt(txt) {
+    const out=[]; let cur=null;
+    txt.split('\n').forEach(l=>{
+        const line=l.trim();
+        const m=line.match(/^ITEM\s+(\d+)(.*)$/i);
+        if(m){
+            cur={ num:parseInt(m[1]), pe:/\|\s*P[ÉE]\s*(\||$)/i.test(m[2]||''), tit:'', desc:'', cAtv:null };
+            out.push(cur); return;
+        }
+        if(!cur) return;
+        if(/^T[ií]tulo:/i.test(line)) cur.tit=line.replace(/^T[ií]tulo:\s*/i,'');
+        else if(/^Descri[çc][ãa]o:/i.test(line)) cur.desc=line.replace(/^Descri[çc][ãa]o:\s*/i,'');
+        else if(/^Comiss[õo]es:/i.test(line)) cur.cAtv=line.replace(/^Comiss[õo]es:\s*/i,'').split(',').map(s=>s.trim()).filter(Boolean);
+        else if(line===''||/^(===|PRESEN|SEPARADOR)/i.test(line)) cur=null;
+    });
+    out.forEach(o=>{ o.key=projKey(o.tit)||projKey(o.desc); });
+    return out;
+}
+
+// ---- Leitura do PDF "Reunião Conjunta das Comissões" (relatório de Congresso do SGP2) ----
+// Recebe as páginas já extraídas: [[{s,x,y}]] (y de cima para baixo). Layout do relatório:
+// linha do projeto ("PL 775 /2026 , DO EXECUTIVO") à esquerda, "* ITEM NA PAUTA n" logo acima,
+// ementa na coluna da esquerda (x < 187) e uma coluna por comissão à direita (x >= 187).
+const PDF_COL_COM = 187;
+const PDF_COMS = [['JUST-','CCJ'],['URB-','URB'],['ADMINISTRA','ADM'],['ECON-','ECON'],['EDUCA','EDUC'],['SAUDE','SAUDE'],['FINAN','FIN']];
+function nomeAutor(s) {
+    s=s.replace(/^[\s,]+/,'').replace(/^d[oa]s?\s+Vereador(?:\(?[ae]s?\)?)*(?:\(as\))?\s*/i,'').trim();
+    if(/^DA\s+MESA/i.test(s)) return 'Mesa da Câmara';
+    s=s.replace(/^d[oa]s?\s+/i,'').replace(/[\s,]+$/,'');
+    if(/^EXECUTIVO$/i.test(s)) return 'Executivo';
+    const min=['da','de','do','das','dos','e'];
+    // nomes em maiúsculas -> iniciais maiúsculas; o que está entre parênteses (partido) fica como veio
+    return s.split(/(\([^)]*\))/).map((p,i)=> i%2 ? p :
+        p.toLowerCase().replace(/[^\s,.\-]+/g,(w,off)=> (off>0&&min.includes(w)) ? w : w.charAt(0).toUpperCase()+w.slice(1))
+    ).join('').replace(/\s+/g,' ').trim();
+}
+function parsePautaPdf(pages) {
+    const itens=[], avisos=[]; let ult=null, detalhada=false;
+    pages.forEach((pg,pi)=>{
+        const its=pg.filter(t=>t.s.trim()).map(t=>({s:t.s.trim(),x:t.x,y:t.y}));
+        if(its.some(t=>/Pauta Detalhada/i.test(t.s))) detalhada=true;
+        // rodapé: tudo na altura de "Página n de m"
+        const rod=its.find(t=>/^P[áa]gina\s+\d+\s+de\s+\d+/i.test(t.s));
+        const yMax=rod?rod.y-6:1e9;
+        // linhas de projeto: um "PL" (ou PDL/PR/PLO) solto ou no começo, na margem esquerda
+        const projs=[];
+        its.filter(t=>t.x<PDF_COL_COM && /^(PL|PDL|PR|PLO)(\s|$)/.test(t.s) && t.y<yMax).forEach(t=>{
+            const linha=its.filter(o=>Math.abs(o.y-t.y)<3).sort((a,b)=>a.x-b.x).map(o=>o.s).join(' ');
+            const m=linha.match(/^(PL|PDL|PR|PLO)\s+0*(\d+)\s*\/\s*(\d{4})\s*(.*)$/);
+            if(m && !projs.some(p=>Math.abs(p.y-t.y)<3)) projs.push({ y:t.y, key:m[1]+' '+parseInt(m[2])+'/'+m[3], resto:m[4] });
+        });
+        projs.sort((a,b)=>a.y-b.y);
+        if(!projs.length){
+            // página de continuação: ementa que não coube na anterior
+            if(ult){
+                const cont=its.filter(t=>t.x<PDF_COL_COM && t.y<yMax && t.y>150 && !/ITEM NA PAUTA/i.test(t.s))
+                    .sort((a,b)=>(a.y-b.y)||(a.x-b.x)).map(t=>t.s).join(' ');
+                if(cont) ult.ementa=(ult.ementa+' '+cont).trim();
+            }
+            return;
+        }
+        projs.forEach((p,i)=>{
+            const yFim=Math.min(i+1<projs.length?projs[i+1].y-25:1e9, yMax);
+            // número na pauta: marcador "* ITEM NA PAUTA" perto da linha do projeto
+            let num=null;
+            const mk=its.find(t=>/ITEM NA PAUTA/i.test(t.s) && t.y>p.y-25 && t.y<p.y+6);
+            if(mk){
+                const mm=mk.s.match(/ITEM NA PAUTA\s*(\d+)/i);
+                if(mm) num=parseInt(mm[1]);
+                else { const d=its.find(t=>/^\d+$/.test(t.s) && Math.abs(t.y-mk.y)<4 && t.x>mk.x); if(d) num=parseInt(d.s); }
+            }
+            // autor: resto da linha do projeto (tirando o marcador, se estiver na mesma linha) + eventual 2ª linha
+            let autor=p.resto.replace(/\*?\s*ITEM NA PAUTA\s*\d*\s*$/i,'').trim();
+            const corpo=its.filter(t=>t.y>p.y+3 && t.y<yFim);
+            const esq=corpo.filter(t=>t.x<PDF_COL_COM).sort((a,b)=>(a.y-b.y)||(a.x-b.x));
+            const emIts=esq.filter(t=>t.x<100);
+            const ementa=emIts.map(t=>t.s).join(' ').replace(/\s+/g,' ').trim();
+            // 2ª linha de autores: na coluna do autor, entre a linha do projeto e o começo da ementa
+            const yEm=emIts.length?emIts[0].y:p.y+25;
+            esq.filter(t=>t.x>=100 && t.y<yEm-3).forEach(t=>{ autor+=' '+t.s; });
+            // comissões: 1ª linha de cada coluna à direita
+            const dir=corpo.filter(t=>t.x>=PDF_COL_COM).sort((a,b)=>(a.x-b.x)||(a.y-b.y));
+            const cols=[]; dir.forEach(t=>{ if(!cols.length||t.x-cols[cols.length-1].x>10) cols.push(t); });
+            const cAtv=[];
+            cols.forEach(t=>{
+                const n=norm(t.s).toUpperCase();
+                const hit=PDF_COMS.find(c=>n.startsWith(c[0]));
+                if(hit){ if(!cAtv.includes(hit[1])) cAtv.push(hit[1]); }
+                else avisos.push(p.key+': comissão não reconhecida ("'+t.s+'") — confira no PDF');
+            });
+            if(!cAtv.length) avisos.push(p.key+': nenhuma comissão identificada (pág. '+(pi+1)+')');
+            ult={ num, key:p.key, autor:nomeAutor(autor), ementa, cAtv, pe:false };
+            itens.push(ult);
+        });
+    });
+    if(!itens.length){
+        return { ok:false, erro: detalhada
+            ? 'Este PDF é a Pauta Detalhada da sessão, que não traz as comissões por item. Use o PDF de Congresso ("Reunião Conjunta das Comissões").'
+            : 'Não reconheci itens neste PDF. Ele precisa ser o relatório de Congresso do SGP2 ("Reunião Conjunta das Comissões"); para outros formatos, use o EXECUTAR.bat.' };
+    }
+    return { ok:true, itens, avisos };
+}
+function titPdf(o, pe) {
+    let em=o.ementa||'';
+    if(em.length>90) em=em.substring(0,88).replace(/\s+\S*$/,'')+'…';
+    return (pe?'Pé':'Item')+(o.num!=null?' '+o.num:'')+' - '+o.key+(em?' - '+em:'');
+}
+function descPdf(o) { return (o.autor?'Autor: '+o.autor+'. ':'')+(o.ementa||''); }
+
+// ---- pdf.js (carregado só quando um PDF é usado; precisa de internet) ----
+const PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+let pdfjsProm=null;
+function carregarPdfjs() {
+    if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if(!pdfjsProm) pdfjsProm=new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src=PDFJS_URL+'pdf.min.js';
+        s.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_URL+'pdf.worker.min.js'; res(window.pdfjsLib); };
+        s.onerror=()=>{ pdfjsProm=null; rej(new Error('não consegui carregar o leitor de PDF (sem internet?)')); };
+        document.head.appendChild(s);
+    });
+    return pdfjsProm;
+}
+async function lerPdf(file) {
+    const lib=await carregarPdfjs();
+    const doc=await lib.getDocument({ data:new Uint8Array(await file.arrayBuffer()) }).promise;
+    const pages=[];
+    for(let n=1;n<=doc.numPages;n++){
+        const pg=await doc.getPage(n);
+        const h=pg.getViewport({scale:1}).height;
+        const tc=await pg.getTextContent();
+        pages.push(tc.items.map(t=>({ s:t.str, x:t.transform[4], y:h-t.transform[5] })));
+    }
+    return parsePautaPdf(pages);
+}
+
+// ---- Entrada: arquivos (botão ou arrastar) e texto colado ----
+let mg=null;   // estado do diálogo: {fonte, src:'pdf'|'txt', inc:[], avisos:[], full, pe, on:Set}
+
+async function atlArquivos(files) {
+    const lst=[...files]; if(!lst.length) return;
+    const inc=[], avisos=[], nomes=[]; let src='txt';
+    for(const f of lst){
+        try {
+            if(/\.pdf$/i.test(f.name)){
+                src='pdf';
+                const r=await lerPdf(f);
+                if(!r.ok){ alert(f.name+': '+r.erro); continue; }
+                inc.push(...r.itens); avisos.push(...r.avisos);
+            } else {
+                const txt=await f.text();
+                // primeiro carregamento do dia: nada na pauta ainda e o texto traz a composição
+                if(lst.length===1 && /===\s*COMISS[ÕO]ES\s*===/i.test(txt) && !cong.some(e=>e.t==='item')){
+                    if(confirm('A pauta está vazia. Carregar o arquivo inteiro (comissões + pauta)? Isso substitui os dados atuais.')){
+                        const r=importState(txt);
+                        if(!r.ok) alert(r.erro);
+                        render(); return;
+                    }
+                }
+                const its=parseItensTxt(txt);
+                if(!its.length){ alert(f.name+': nenhum bloco ITEM encontrado.'); continue; }
+                inc.push(...its);
+            }
+            nomes.push(f.name);
+        } catch(e){ alert(f.name+': '+(e&&e.message?e.message:e)); }
+    }
+    if(inc.length) mgAbrir(inc, src, nomes.join(', '), avisos);
+}
+
+function mesclarTxt() {
+    const ta=document.getElementById('cfg-txt-area');
+    const inc=parseItensTxt(ta.value);
+    if(!inc.length){ alert('Nenhum bloco ITEM encontrado no texto.'); return; }
+    fecharCfg();
+    mgAbrir(inc, 'txt', 'texto colado', []);
+}
+
+// ---- Plano de mudanças ----
+function mgPlano() {
+    const conhecidas=new Set(coms.map(c=>c.sigla));
+    const atuais=cong.filter(e=>e.t==='item').map(e=>getItem(e.iid)).filter(Boolean);
+    const usados=new Set();
+    const novos=[], alt=[]; let iguais=0;
+    const vistos=new Set();
+    mg.inc.forEach((o,idx)=>{
+        const dup=(o.key||'#'+o.num)+'|'+o.num;
+        if(vistos.has(dup)) return;          // mesmo item em dois arquivos
+        vistos.add(dup);
+        const it = o.key
+            ? atuais.find(a=>!usados.has(a.id) && itemKey(a)===o.key)
+            : atuais.find(a=>!usados.has(a.id) && !itemKey(a) && a.num===o.num);
+        if(!it){ novos.push({ idx, o }); return; }
+        usados.add(it.id);
+        let addC=[], rmC=[];
+        if(o.cAtv){
+            const inc=o.cAtv.filter(s=>conhecidas.has(s));
+            addC=inc.filter(s=>!it.cAtv.includes(s));
+            rmC=it.cAtv.filter(s=>!inc.includes(s));
+        }
+        let tit=it.tit, desc=it.desc;
+        if(mg.src==='pdf'){
+            // do PDF não vem título resumido: preserva o que já existe, só acerta o número e preenche vazios
+            if(itemPlaceholder(it)) tit=titPdf(o, it.pe);
+            else if(!it.pe && o.num!=null) tit=it.tit.replace(/^Item\s+\d+\s+-\s+/, 'Item '+o.num+' - ');
+            if(!it.desc) desc=descPdf(o);
+        } else {
+            if(o.tit) tit=o.tit;
+            if(o.desc) desc=o.desc;
+        }
+        const mTit=tit!==it.tit, mDesc=desc!==it.desc;
+        if(addC.length||rmC.length||mTit||mDesc) alt.push({ idx, o, it, addC, rmC, tit, desc, mTit, mDesc });
+        else iguais++;
+    });
+    // itens da pauta atual que não vieram na lista (só faz sentido se a lista recebida é a completa)
+    const temPe=mg.inc.some(o=>o.pe);
+    const fora=atuais.filter(a=>!usados.has(a.id) && (itemKey(a)||a.cAtv.length) && (temPe||!a.pe));
+    const desconh=[...new Set(mg.inc.flatMap(o=>o.cAtv||[]).filter(s=>!conhecidas.has(s)))];
+    return { novos, alt, fora, iguais, desconh };
+}
+
+function mgAbrir(inc, src, fonte, avisos) {
+    mg={ inc, src, fonte, avisos, full:false, pe:false, on:new Set() };
+    const p=mgPlano();
+    const nAtuais=cong.filter(e=>e.t==='item').length;
+    // Palpite do tipo de arquivo (o usuário pode trocar no diálogo)
+    const casados=p.alt.length+p.iguais;
+    const comecou=cong.some(e=>{ if(e.t!=='item') return false; const it=getItem(e.iid); return it&&it.apregoado; });
+    let tipo, motivo;
+    if(nAtuais===0){ tipo='lista'; motivo='a pauta do app está vazia'; }
+    else if(src==='pdf' && inc.every(o=>o.num==null)){ tipo='pes'; motivo='este PDF não traz "ITEM NA PAUTA n", como os PDFs de pé de pauta'; }
+    else if(casados>=nAtuais/2){ tipo='lista'; motivo=casados+' dos '+nAtuais+' itens que estão no app aparecem neste arquivo'; }
+    else if(src==='pdf' && comecou){ tipo='pes'; motivo='o congresso já começou e quase nada deste arquivo está na pauta'; }
+    else { tipo='mais'; motivo='quase nada deste arquivo está na pauta do app'; }
+    mg.motivo=motivo; mg.palpite=tipo;
+    mgSetTipo(tipo);
+    p.novos.forEach(n=>mg.on.add('n'+n.idx));
+    // mudança de comissão em item já apregoado fica desmarcada por padrão (mexe em votação em curso)
+    p.alt.forEach(a=>{ if(!(a.it.apregoado && (a.addC.length||a.rmC.length))) mg.on.add('a'+a.idx); });
+    document.getElementById('modal-mg').classList.add('show');
+    mgRender();
+}
+function mgFechar() { document.getElementById('modal-mg').classList.remove('show'); mg=null; }
+function mgTog(k) { if(mg.on.has(k)) mg.on.delete(k); else mg.on.add(k); mgRender(); }
+// Tipo do arquivo recebido: 'lista' (pauta inteira, versão nova) | 'pes' (pés de pauta) | 'mais' (itens avulsos a acrescentar)
+function mgSetTipo(t) { mg.tipo=t; mg.full=(t==='lista'); mg.pe=(t==='pes'); }
+function mgTipo(t) { mgSetTipo(t); mgRender(); }
+
+function mgRender() {
+    if(!mg) return;
+    const p=mgPlano();
+    const chk=(k)=>'<input type="checkbox" '+(mg.on.has(k)?'checked':'')+' onchange="mgTog(\''+k+'\')">';
+    let h='<p class="hint">Fonte: '+esc(mg.fonte)+' — '+mg.inc.length+' item(ns) lido(s). Presenças, votos, ordem e composição das comissões não são alterados.</p>';
+    const tipos=[
+        ['lista','Lista atualizada do Congresso','É a pauta inteira, numa versão mais nova. Além dos novos e alterados, mostro os itens que estão no app e sumiram desta lista, para você decidir se retira.'],
+        ['pes','Pés de pauta','São itens extras que chegaram depois. Os novos entram no fim com a etiqueta PÉ. O que já está na pauta e não aparece neste arquivo fica como está.'],
+        ['mais','Outros itens a acrescentar','Lista parcial que não é pé de pauta (ex.: substitutivos). Os novos entram no fim como itens comuns. O que não aparece neste arquivo fica como está.']
+    ].filter(t=>mg.src==='pdf'||t[0]!=='pes');   // no texto de importação, os pés já vêm marcados
+    h+='<div class="mg-opts"><div class="mg-q">O que é este arquivo?</div>';
+    tipos.forEach(t=>{
+        h+='<label class="mg-tipo'+(mg.tipo===t[0]?' on':'')+'"><input type="radio" name="mg-tipo" '+(mg.tipo===t[0]?'checked':'')+' onchange="mgTipo(\''+t[0]+'\')">' +
+           '<span><b>'+t[1]+'</b>'+(mg.palpite===t[0]?' <span class="mg-palp">sugerido</span>':'')+'<br><span class="mg-d">'+t[2]+'</span></span></label>';
+    });
+    h+='<div class="mg-d">Sugestão automática porque '+esc(mg.motivo)+'. Troque se não for o caso.</div></div>';
+    mg.avisos.forEach(a=>{ h+='<div class="mg-warn">'+esc(a)+'</div>'; });
+    if(p.desconh.length) h+='<div class="mg-warn">Sigla(s) de comissão que não existem na composição atual, ignoradas: '+esc(p.desconh.join(', '))+'</div>';
+
+    if(p.novos.length){
+        h+='<div class="mg-sec"><h4>Novos ('+p.novos.length+') — desmarque o que não deve entrar</h4>';
+        p.novos.forEach(n=>{
+            const o=n.o, pe=o.pe||mg.pe;
+            const tit=mg.src==='pdf'?titPdf(o,pe):(o.tit||'Item '+o.num);
+            h+='<label class="mg-li">'+chk('n'+n.idx)+'<span><span class="mg-t">'+esc(tit)+'</span>'+(pe?' <span class="badge-pe">PÉ</span>':'') +
+               '<br><span class="mg-d">Comissões: '+esc((o.cAtv&&o.cAtv.length)?o.cAtv.join(', '):'não identificadas')+'</span></span></label>';
+        });
+        h+='</div>';
+    }
+    if(p.alt.length){
+        h+='<div class="mg-sec"><h4>Alterados ('+p.alt.length+') — desmarque para manter como está no app</h4>';
+        p.alt.forEach(a=>{
+            let d=[];
+            if(a.addC.length) d.push('<span class="mg-add">+ '+esc(a.addC.join(', '))+'</span>');
+            if(a.rmC.length) d.push('<span class="mg-rm">− '+esc(a.rmC.join(', '))+'</span>');
+            if(a.mTit) d.push('título → '+esc(a.tit));
+            if(a.mDesc) d.push('descrição atualizada');
+            const votado=a.it.apregoado&&(a.addC.length||a.rmC.length);
+            h+='<label class="mg-li">'+chk('a'+a.idx)+'<span><span class="mg-t">'+esc(a.it.tit)+'</span>' +
+               '<br><span class="mg-d">'+d.join(' &middot; ')+(votado?' &middot; <b>já apregoado</b> — tirar comissão apaga os votos dela':'')+'</span></span></label>';
+        });
+        h+='</div>';
+    }
+    if(mg.full && p.fora.length){
+        h+='<div class="mg-sec"><h4>Saíram da lista ('+p.fora.length+') — marque para retirar do Congresso</h4>';
+        p.fora.forEach(it=>{
+            h+='<label class="mg-li">'+chk('f'+it.id)+'<span><span class="mg-t">'+esc(it.tit)+'</span>' +
+               (it.apregoado?'<br><span class="mg-d"><b>já apregoado</b></span>':'')+'</span></label>';
+        });
+        h+='<p class="hint" style="margin-top:4px">Retirar só tira o item da ordem do Congresso; ele continua na aba Itens, com os dados.</p></div>';
+    }
+    if(!p.novos.length && !p.alt.length && !(mg.full&&p.fora.length)){
+        h+='<p class="mg-none">Nada a mudar: a pauta já está igual a esta lista.</p>';
+    } else if(p.iguais){
+        h+='<p class="hint" style="margin-top:10px">'+p.iguais+' item(ns) sem mudança.</p>';
+    }
+    document.getElementById('mgbody').innerHTML=h;
+}
+
+// Item para receber um projeto novo: reaproveita o "Item n" vazio de mesmo número, se estiver livre
+function mgNovoItem(num) {
+    let it = num!=null ? itens.find(x=>x.id==='i-'+num) : null;
+    if(it && (isSel(it.id) || !itemPlaceholder(it) || it.cAtv.length || it.desc)) it=null;
+    if(!it){
+        const livre = num!=null && !itens.some(x=>x.id==='i-'+num);
+        const n = livre ? num : nItem++;
+        it=mkItem(n); itens.push(it);
+        if(n>=nItem) nItem=n+1;
+    }
+    return it;
+}
+
+function mgAplicar() {
+    if(!mg) return;
+    const p=mgPlano();
+    const conhecidas=new Set(coms.map(c=>c.sigla));
+    let nNov=0, nAlt=0, nFora=0;
+    p.alt.forEach(a=>{
+        if(!mg.on.has('a'+a.idx)) return;
+        const it=a.it;
+        it.tit=a.tit; it.desc=a.desc;
+        a.addC.forEach(s=>{ it.cAtv.push(s); it.votos[s]={}; });
+        a.rmC.forEach(s=>{ it.cAtv.splice(it.cAtv.indexOf(s),1); delete it.votos[s]; });
+        nAlt++;
+    });
+    p.novos.forEach(n=>{
+        if(!mg.on.has('n'+n.idx)) return;
+        const o=n.o, pe=o.pe||mg.pe;
+        const it=mgNovoItem(o.num);
+        it.pe=pe;
+        // PDF de pés de pauta não traz número: numera como o "+ Pé de Pauta" (Pé 1, Pé 2…)
+        const numTit = o.num!=null ? o.num : (it.num>100 ? it.num-100 : null);
+        it.tit = mg.src==='pdf' ? titPdf(Object.assign({}, o, {num:numTit}), pe) : (o.tit||it.tit);
+        it.desc = mg.src==='pdf' ? descPdf(o) : (o.desc||'');
+        it.cAtv=(o.cAtv||[]).filter(s=>conhecidas.has(s));
+        it.votos={}; it.cAtv.forEach(s=>{ it.votos[s]={}; });
+        cong.push({t:'item', iid:it.id});
+        nNov++;
+    });
+    if(mg.full) p.fora.forEach(it=>{
+        if(!mg.on.has('f'+it.id)) return;
+        cong=cong.filter(e=>!(e.t==='item'&&e.iid===it.id));
+        if(selId===it.id) selId=null;
+        nFora++;
+    });
+    if(nNov||nAlt||nFora){
+        const d=new Date();
+        const hora=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+        notas=(notas?notas+'\n':'')+'Pauta atualizada ('+hora+', '+mg.fonte+'): '+nNov+' novo(s), '+nAlt+' alterado(s), '+nFora+' retirado(s)';
+    }
+    mgFechar();
+    save(); render();
+}
+
+// ---- Arrastar arquivo para a janela ----
+function dropEvents() {
+    const ov=document.getElementById('drop-ov');
+    const temArq=e=>e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files');
+    let n=0;
+    window.addEventListener('dragenter',e=>{ if(!temArq(e)) return; e.preventDefault(); n++; ov.classList.add('show'); });
+    window.addEventListener('dragover',e=>{ if(temArq(e)) e.preventDefault(); });
+    window.addEventListener('dragleave',e=>{ if(!temArq(e)) return; n=Math.max(0,n-1); if(!n) ov.classList.remove('show'); });
+    window.addEventListener('drop',e=>{
+        if(!temArq(e)) return;
+        e.preventDefault(); n=0; ov.classList.remove('show');
+        atlArquivos(e.dataTransfer.files);
+    });
+}
+
 // ========== NOVO ==========
 function novo() {
     if(!confirm('Limpar todos os dados?')) return;
@@ -1571,7 +2432,16 @@ function events() {
     document.getElementById('bt-reset').addEventListener('click', resetTm);
     document.getElementById('bt-pres').addEventListener('click', addPres);
     document.getElementById('bt-pe').addEventListener('click', addPe);
+    document.getElementById('bt-sep').addEventListener('click', addSep);
+    document.getElementById('bt-atl').addEventListener('click',()=>document.getElementById('in-atl').click());
+    document.getElementById('in-atl').addEventListener('change',e=>{ atlArquivos(e.target.files); e.target.value=''; });
+    document.getElementById('modal-mg').addEventListener('click',e=>{ if(e.target===e.currentTarget) mgFechar(); });
+    dropEvents();
     document.getElementById('bt-cfg').addEventListener('click', abrirCfg);
+    document.getElementById('bt-mx').addEventListener('click', e=>{ e.currentTarget.blur(); toggleMatriz(); });
+    document.addEventListener('keydown', mxTecla);
+    // o Espaço "clica" o botão em foco ao soltar a tecla; na visão geral ele é do apregoar
+    document.addEventListener('keyup', e=>{ if(visao==='mx' && e.key===' ' && e.target && e.target.tagName==='BUTTON' && !document.querySelector('.modal.show')) e.preventDefault(); });
     document.getElementById('bt-novo').addEventListener('click', novo);
     document.getElementById('bt-menu').addEventListener('click', togMenu);
     document.getElementById('side-backdrop').addEventListener('click', closeMenu);
