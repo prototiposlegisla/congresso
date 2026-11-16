@@ -71,6 +71,15 @@
         .prev-tr { margin-top:8px; font-weight:600; }
         .prev-tr div { display:flex; gap:8px; align-items:center; font-weight:400; margin-top:3px; }
         .prev-tr button { border:1px solid #b7892a; background:#fff; border-radius:4px; font-size:11px; padding:2px 8px; cursor:pointer; }
+        .prev-sg { display:block !important; font-weight:400; margin-top:5px; }
+        .prev-sg small { opacity:.7; font-size:10px; }
+        .prev-sg div { flex-wrap:wrap; }
+        .pc.vistos { margin-top:8px; }
+        .bt-limpa { margin-left:8px; padding:3px 10px; border:1px solid var(--brd); border-radius:4px; background:#fff; font-size:12px; cursor:pointer; }
+        .vg { display:flex; flex-wrap:wrap; gap:6px 14px; }
+        .vgp { display:flex; flex-wrap:wrap; gap:3px; align-items:center; }
+        .vpt { font-size:11px; font-weight:700; color:var(--txt2); min-width:34px; }
+        .vgp .mc { min-height:30px; padding:2px 6px; font-size:12px; }
         .prev-ac { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
         .prev-ac button { padding:6px 12px; border:1px solid #b7892a; border-radius:4px; font-size:12px; background:#fff; min-height:34px; cursor:pointer; color:#3a2c00; }
         .prev-ac button.pri { background:#276749; border-color:#276749; color:#fff; font-weight:600; }
@@ -166,10 +175,13 @@
         .pa button { padding:6px 10px; border:1px solid var(--brd); border-radius:4px; font-size:12px; background:#fff; min-height:36px; }
 
         /* BARRA DE QUÓRUM: preenchimento = presentes; traço = quórum */
-        .qbar { flex:1; min-width:30px; height:6px; background:rgba(0,0,0,.12); border-radius:3px; position:relative; display:block; }
-        .qbar i { display:block; height:100%; border-radius:3px; background:var(--nok); max-width:100%; }
-        .qbar.ok i { background:var(--ok); }
-        .qbar u { position:absolute; top:-3px; bottom:-3px; width:2px; margin-left:-1px; background:var(--txt); }
+        /* Barra de quórum: uma casa por membro; a mais alta é a cadeira-chave (a que completa o quórum) */
+        .qbar { flex:1; min-width:30px; display:flex; gap:2px; align-items:center; }
+        .qbar i { flex:1; height:8px; border-radius:2px; background:rgba(0,0,0,.13); display:block; }
+        .qbar i.key { height:15px; border-radius:3px; }
+        .qbar i.on { background:var(--nok); }
+        .qbar.ok i.on { background:var(--ok); }
+        .qbar i.falta { background:transparent; box-shadow:inset 0 0 0 1.5px var(--nok); }
         .pch { gap:8px; }
 
         /* COMISSÕES EM COLUNAS (presença e item) */
@@ -206,10 +218,11 @@
         .mx tr.pr td { background:#1a202c; color:#fff; font-weight:600; border-bottom-color:#1a202c; }
         .mx tr.pr td.c { font-size:11px; padding:5px 8px; }
         .mx tr.pr td.c.dim { opacity:.35; }
-        .mx tr.pr .qbar { background:rgba(255,255,255,.25); margin-top:3px; }
-        .mx tr.pr .qbar u { background:#fff; }
-        .mx tr.pr .qbar i { background:#fc8181; }
-        .mx tr.pr .qbar.ok i { background:#68d391; }
+        .mx tr.pr .qbar { margin-top:3px; }
+        .mx tr.pr .qbar i { background:rgba(255,255,255,.22); }
+        .mx tr.pr .qbar i.on { background:#fc8181; }
+        .mx tr.pr .qbar.ok i.on { background:#68d391; }
+        .mx tr.pr .qbar i.falta { background:transparent; box-shadow:inset 0 0 0 1.5px #fc8181; }
         /* mesma simbologia do resto do app: linha esmaecida sem quórum, fundo pelo resultado */
         .mx tr { scroll-margin-top:40px; scroll-margin-bottom:8px; }
         .mx tr.it.st-ok > td { background:#e9fbf0; }
@@ -742,12 +755,14 @@ function renderDet() {
     el.innerHTML='<div class="ph">Não encontrado.</div>';
 }
 
-// Barra de quórum: preenchimento = presentes sobre o total; traço = onde está o quórum
+// Barra de quórum: uma casa por membro. Cheias = presentes; as que faltam para o quórum
+// ficam vazadas; a casa mais alta é a cadeira-chave (a que completa o quórum).
 function qbarHtml(n, total) {
     if(!total) return '';
     const q=Math.floor(total/2)+1;
-    return '<span class="qbar'+(n>=q?' ok':'')+'" title="'+n+' de '+total+' presentes; quórum: '+q+'">' +
-           '<i style="width:'+Math.min(100,n/total*100)+'%"></i><u style="left:'+(q/total*100)+'%"></u></span>';
+    let h='<span class="qbar'+(n>=q?' ok':'')+'" title="'+n+' de '+total+' presentes; quórum: '+q+'">';
+    for(let i=1;i<=total;i++) h+='<i class="'+(i<=n?'on':i<=q?'falta':'')+(i===q?' key':'')+'"></i>';
+    return h+'</span>';
 }
 
 // Visão geral: uma linha por entrada do congresso, uma coluna por comissão
@@ -879,8 +894,10 @@ function renderDetSep(el, s) {
 // Onde mais o vereador já deu presença: em outra comissão deste registro (está na casa agora),
 // ou em outro registro/congresso. Usado no dropdown de substituições.
 function presencaInfo(p, nome) {
-    const aqui=coms.filter(c=>(p.pr[c.sigla]||[]).includes(nome)).map(c=>c.sigla);
+    const convP=getConvocadas(p.id);   // só as comissões convocadas (as outras nem aparecem no registro)
+    const aqui=coms.filter(c=>convP.has(c.sigla) && (p.pr[c.sigla]||[]).includes(nome)).map(c=>c.sigla);
     if(aqui.length) return { ord:0, txt:'✓ presente ('+aqui.join(', ')+')' };
+    if((p.vistos||[]).includes(nome)) return { ord:0, txt:'✓ visto no plenário' };
     const ip=congIdx(p.id);
     const segP=ip>-1?segDe(ip)[0]:-1;
     const onde=[];
@@ -954,6 +971,7 @@ function renderDetPres(el, p) {
         h+='</div></div></div>';
     });
     h+='</div>';
+    h+=vistosHtml(p, conv, pv);
 
     if(conv.size>0){
         const abre=cq>conv.size/2;
@@ -1335,7 +1353,7 @@ function previaEncerrar(modo){
     if(modo==='tudo') previa.trocas.forEach(t=>{ if(previaPodeDesfazer(t)) anotarTroca(t.sig, t.ant, t.novo); });
     else {
         previaDesfazTrocas();
-        if(modo==='descartar' && p){ p.pr=previa.pr; p.herd=previa.herd; }
+        if(modo==='descartar' && p){ p.pr=previa.pr; p.herd=previa.herd; }   // os vistos ficam: quem foi visto na casa continua visto
     }
     previa=null;
     save(); render();
@@ -1355,13 +1373,83 @@ function previaBoxHtml(p){
         });
         h+='</div>';
     }
+    h+=previaSugestoesHtml(p);
     const temTr=previa.trocas.length>0;
     h+='<div class="prev-ac">' +
-       '<button onclick="previaEncerrar(\'descartar\')" title="O registro e as comissões voltam a ser como eram antes da prévia">Descartar a prévia</button>' +
+       '<button onclick="previaEncerrar(\'descartar\')" title="As presenças e as comissões voltam a ser como eram antes da prévia; os vistos no plenário continuam marcados">Descartar a prévia</button>' +
        (temTr?'<button onclick="previaEncerrar(\'pres\')" title="Ficam marcados os presentes; as substituições em teste são desfeitas">Valer só as presenças</button>':'') +
        '<button class="pri" onclick="previaEncerrar(\'tudo\')" title="'+(temTr?'Presenças e substituições passam a valer; as trocas são anotadas nas Anotações':'As presenças marcadas passam a valer')+'">'+(temTr?'Valer tudo (presenças e trocas)':'Valer como presença real')+'</button>' +
        '</div></div>';
     return h;
+}
+// ---- Vistos no plenário: vereadores que não são membros das comissões convocadas, mas estão
+// na casa e por isso servem de substitutos. Ficam em p.vistos (lista de nomes) do registro.
+function foraDasConvocadas(conv){
+    const dentro=new Set();
+    coms.forEach(c=>{ if(conv.has(c.sigla)) c.membros.forEach(m=>dentro.add(m)); });
+    return vereadoresTodos().map(v=>v.nome).filter(n=>!dentro.has(n));
+}
+// Está na casa: marcado presente em alguma comissão deste registro ou marcado como visto
+function vistoAqui(p, nome){
+    const conv=getConvocadas(p.id);   // presença em comissão não convocada não aparece na tela: não conta
+    return (p.vistos||[]).includes(nome) || coms.some(c=>conv.has(c.sigla) && (p.pr[c.sigla]||[]).includes(nome));
+}
+function togVisto(pid, nome){
+    const p=pres[pid]; if(!p) return;
+    if(!p.vistos) p.vistos=[];
+    const i=p.vistos.indexOf(nome);
+    if(i>-1) p.vistos.splice(i,1); else p.vistos.push(nome);
+    save(); render();
+}
+function limparVistos(pid){
+    const p=pres[pid]; if(!p) return;
+    p.vistos=[];
+    save(); render();
+}
+function vistosHtml(p, conv, pv){
+    if(!conv.size) return '';
+    const fora=foraDasConvocadas(conv);
+    const marc=(p.vistos||[]).filter(n=>fora.includes(n));
+    if(!fora.length) return '';
+    const grupos={};
+    fora.forEach(n=>{ const pt=partidoDe(n)||'sem partido'; (grupos[pt]=grupos[pt]||[]).push(n); });
+    let h='<div class="pc vistos"><div class="pch"><span>Outros vereadores vistos no plenário</span><span class="qb">'+marc.length+' marcado'+(marc.length===1?'':'s') +
+          (marc.length?' <button class="bt-limpa" onclick="limparVistos(\''+p.id+'\')" title="Desmarca todos os vistos deste registro">Limpar</button>':'')+'</span></div>' +
+          '<div class="pcb"><p class="hint">Não são membros das comissões convocadas, mas estando na casa podem substituir um colega do mesmo partido. Quem for marcado aqui aparece primeiro no menu de troca'+(pv?' e entra nas sugestões da prévia':'')+'.</p><div class="vg">';
+    Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'pt')).forEach(pt=>{
+        h+='<div class="vgp"><span class="vpt">'+esc(pt)+'</span>';
+        grupos[pt].sort((a,b)=>a.localeCompare(b,'pt')).forEach(n=>{
+            const on=marc.includes(n);
+            const nomeCurto=n.replace(/\s*\([^()]*\)\s*$/,'');
+            h+='<label class="mc'+(on?' nova':'')+'" title="'+ea(n)+'"><input type="checkbox" '+(on?'checked':'')+' data-n="'+ea(n)+'" onchange="togVisto(\''+p.id+'\',this.dataset.n)">'+esc(nomeCurto)+'</label>';
+        });
+        h+='</div>';
+    });
+    h+='</div></div></div>';
+    return h;
+}
+// Para cada comissão convocada ainda sem quórum: ausentes que têm colega de partido já visto na casa
+function previaSugestoesHtml(p){
+    const conv=getConvocadas(p.id);
+    let h='';
+    coms.forEach((c,ci)=>{
+        if(!conv.has(c.sigla)) return;
+        const pr=p.pr[c.sigla]||[], q=Math.floor(c.membros.length/2)+1;
+        if(pr.length>=q) return;
+        let linhas='';
+        c.membros.forEach((m,mi)=>{
+            if(pr.includes(m)) return;
+            const cand=trocasPossiveis(c,m).filter(n=>vistoAqui(p,n));
+            if(!cand.length) return;
+            linhas+='<div><span>'+esc(m)+' &rarr;</span>'+cand.map(n=>{
+                const outras=coms.filter(o=>o!==c && conv.has(o.sigla) && o.membros.includes(n)).map(o=>o.sigla);
+                return '<button title="Testar esta troca'+(outras.length?' (também é membro: '+outras.join(', ')+')':'')+'" data-n="'+ea(n)+'" onclick="swapMem(\''+p.id+'\','+ci+','+mi+',this.dataset.n)">'+esc(n)+(outras.length?' <small>'+outras.join(', ')+'</small>':'')+'</button>';
+            }).join('')+'</div>';
+        });
+        if(linhas) h+='<div class="prev-sg"><b>'+c.sigla+'</b> (falta '+(q-pr.length)+'):'+linhas+'</div>';
+    });
+    if(!h) return '';
+    return '<div class="prev-tr">Trocas possíveis com quem já está na casa (clique para testar):'+h+'</div>';
 }
 function renderPreviaHdr(){
     if(previa && !pres[previa.pid]) previa=null;
@@ -1527,6 +1615,7 @@ function addPres() {
             p.pr[c.sigla] = prevPres.pr[c.sigla] ? [...prevPres.pr[c.sigla]] : [];
             p.herd[c.sigla] = [...p.pr[c.sigla]];
         });
+        p.vistos = [...(prevPres.vistos||[])];   // quem já foi visto na casa continua valendo
     }
     pres[p.id]=p;
     cong.splice(ins,0,{t:'pres',pid:p.id});
