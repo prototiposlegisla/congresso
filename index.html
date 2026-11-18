@@ -65,7 +65,23 @@
         /* Prévia de presenças: listras âmbar = "ainda não vale" */
         .ent.pres.prev, .mx tr.pr.prev td { background:repeating-linear-gradient(135deg,#1a202c 0 10px,#3d3413 10px 20px); }
         .badge-prev { display:inline-block; background:#f6c343; color:#3a2c00; font-size:10px; font-weight:700; padding:1px 6px; border-radius:3px; letter-spacing:.04em; vertical-align:middle; }
-        #bt-prev-hdr { background:#f6c343; color:#3a2c00; border-color:#f6c343; font-weight:700; }
+        #bt-prev-hdr.on { background:#f6c343; color:#3a2c00; border-color:#f6c343; font-weight:700; }
+        .prev-det summary { cursor:pointer; }
+        .pv-duv { display:flex; align-items:center; gap:6px; margin-top:8px; font-weight:600; cursor:pointer; }
+        .pv-duv input { width:16px; height:16px; }
+        .mc.pvc { cursor:pointer; user-select:none; }
+        .pvg { width:17px; height:17px; flex-shrink:0; border-radius:50%; border:1.5px solid #a0aec0; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1; background:#fff; color:transparent; }
+        .pvn small { display:block; font-size:10px; color:var(--txt2); }
+        .mc.pv-r { background:var(--ok-bg); border-color:var(--ok); cursor:default; }
+        .pv-r .pvg, .pvg.lg.r { background:var(--ok); border-color:var(--ok); color:#fff; }
+        .mc.pv-c { background:#ffefb0; border-color:#d69e2e; }
+        .pv-c .pvg, .pvg.lg.c { background:#d69e2e; border-color:#d69e2e; color:#fff; }
+        .mc.pv-d { background:repeating-linear-gradient(135deg,#fffdf2 0 6px,#fdf0bf 6px 12px); border:1px dashed #d69e2e; }
+        .pv-d .pvg, .pvg.lg.d { border:1.5px dashed #b7791f; color:#975a16; background:#fff; }
+        .pvg.lg { vertical-align:middle; }
+        .res .rs.apag { opacity:.5; font-weight:400; }
+        .qbar i.dv { background:transparent !important; box-shadow:inset 0 0 0 1.5px #d69e2e; }
+        .qbar i.on.dv { background:repeating-linear-gradient(135deg,#d69e2e 0 3px,#f6e05e 3px 6px) !important; box-shadow:none; }
         .det.em-prev { outline:2px dashed #d69e2e; outline-offset:6px; border-radius:4px; }
         .prev-box { background:repeating-linear-gradient(135deg,#fff8dc 0 12px,#fdf0bf 12px 24px); border:1px solid #d69e2e; border-radius:6px; padding:10px 12px; margin-bottom:10px; font-size:13px; line-height:1.45; color:#3a2c00; }
         .prev-tr { margin-top:8px; font-weight:600; }
@@ -405,7 +421,7 @@
         <button id="bt-reset" title="Reiniciar">&#8634;</button>
     </div>
     <a class="hdr-btn" href="https://www.saopaulo.sp.leg.br/atividade-legislativa/comissoes/" target="_blank" rel="noopener" title="Quadro de Composição das Comissões — site da Câmara">&#128203; Quadro</a>
-    <button class="hdr-btn" id="bt-prev-hdr" style="display:none" onclick="previaIr()" title="Há uma prévia de presenças em andamento: as marcações ainda não valem. Clique para ir até ela.">&#9998; Prévia em andamento</button>
+    <button class="hdr-btn" id="bt-prev-hdr" onclick="this.blur();prevToggle()" title="Mostra ou oculta a prévia: uma camada por cima das presenças reais, para marcar quem já está na casa e testar trocas antes de abrir">&#9998; Prévia</button>
     <button class="hdr-btn" id="bt-mx" title="Visão geral: todos os itens × comissões numa tabela">&#9638; Visão geral</button>
     <button class="hdr-btn" id="bt-atl" title="Atualizar a pauta a partir de um PDF de Congresso ou do texto de importação, sem perder presenças e votos (também dá para arrastar o arquivo para cá)">&#8635; Pauta</button>
     <input type="file" id="in-atl" accept=".pdf,.md,.txt" multiple style="display:none">
@@ -509,7 +525,8 @@ let filtro = '';
 let nPres = 2;
 let nItem = 101;
 let notas = '';         // anotações livres sobre o Congresso
-let previa = null;      // prévia de presenças em andamento: {pid, pr, herd, trocas:[{sig,ant,novo,antPres,cP,cV}]}
+let prevOn = false;     // prévia visível: máscara sobre as presenças reais (os cliques marcam a prévia, não a presença)
+let prevDuv = false;    // na prévia, contar também os duvidosos (na casa, mas talvez não marquem presença)
 let tmr = { tot:75*60, rem:75*60, on:false, id:null, t0:null, el:0 };
 
 // estado da barra de votação simbólica
@@ -577,7 +594,7 @@ function isSel(iid) { return cong.some(e=>e.t==='item'&&e.iid===iid); }
 
 // ========== PERSISTÊNCIA ==========
 function save() {
-    try { localStorage.setItem('cong-cmsp', JSON.stringify({coms,itens,cong,pres,seps,nSep,selId,aTab,visao,nPres,nItem,notas,previa,tmrRem:tmr.rem})); } catch(e){}
+    try { localStorage.setItem('cong-cmsp', JSON.stringify({coms,itens,cong,pres,seps,nSep,selId,aTab,visao,nPres,nItem,notas,prevOn,prevDuv,tmrRem:tmr.rem})); } catch(e){}
 }
 function load() {
     try {
@@ -587,7 +604,7 @@ function load() {
         selId=d.selId; aTab=d.aTab||'cong'; visao=d.visao==='mx'?'mx':'det'; nPres=d.nPres||2; nItem=d.nItem||101;
         notas=d.notas||'';
         seps=d.seps||{}; nSep=d.nSep||1;
-        previa=(d.previa&&pres[d.previa.pid])?d.previa:null;
+        prevOn=!!d.prevOn; prevDuv=!!d.prevDuv;
         tmr.rem=d.tmrRem!=null?d.tmrRem:75*60;
         return true;
     } catch(e){ return false; }
@@ -634,9 +651,9 @@ function renderCong() {
     cong.forEach((e,i)=>{
         if(e.t==='pres'){
             const p=pres[e.pid];
-            h+='<div class="ent pres'+(emPrevia(e.pid)?' prev':'')+(selId===e.pid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.pid+'\',\'pres\')">' +
+            h+='<div class="ent pres'+(prevMostra(p)?' prev':'')+(selId===e.pid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.pid+'\',\'pres\')">' +
                '<span class="drag-handle">&#10495;</span>' +
-               '<span class="et">'+esc(p.titulo)+(emPrevia(e.pid)?' <span class="badge-prev">PRÉVIA</span>':'')+'</span>' +
+               '<span class="et">'+esc(p.titulo)+(prevMostra(p)?' <span class="badge-prev">PRÉVIA</span>':'')+'</span>' +
                '<button class="bi rm" onclick="event.stopPropagation();rmPres(\''+e.pid+'\')">&#10005;</button></div>';
         } else if(e.t==='sep'){
             h+='<div class="ent sep'+(selId===e.sid?' sel':'')+'" data-idx="'+i+'" onclick="sel(\''+e.sid+'\',\'sep\')">' +
@@ -757,11 +774,15 @@ function renderDet() {
 
 // Barra de quórum: uma casa por membro. Cheias = presentes; as que faltam para o quórum
 // ficam vazadas; a casa mais alta é a cadeira-chave (a que completa o quórum).
-function qbarHtml(n, total) {
+function qbarHtml(n, total, d, dOn) {
     if(!total) return '';
-    const q=Math.floor(total/2)+1;
-    let h='<span class="qbar'+(n>=q?' ok':'')+'" title="'+n+' de '+total+' presentes; quórum: '+q+'">';
-    for(let i=1;i<=total;i++) h+='<i class="'+(i<=n?'on':i<=q?'falta':'')+(i===q?' key':'')+'"></i>';
+    d=d||0;   // d = duvidosos da prévia (casas âmbar); dOn = se contam para o quórum
+    const q=Math.floor(total/2)+1, ef=n+(dOn?d:0);
+    let h='<span class="qbar'+(ef>=q?' ok':'')+'" title="'+ef+' de '+total+' presentes'+(d?' ('+d+' em dúvida, '+(dOn?'contados':'não contados')+')':'')+'; quórum: '+q+'">';
+    for(let i=1;i<=total;i++){
+        const cls = i<=n ? 'on' : i<=n+d ? (dOn?'on dv':'dv') : i<=q ? 'falta' : '';
+        h+='<i class="'+cls+(i===q?' key':'')+'"></i>';
+    }
     return h+'</span>';
 }
 
@@ -788,13 +809,14 @@ function renderMatriz(el) {
         }
         if(e.t==='pres'){
             const p=pres[e.pid], conv=getConvocadas(e.pid); let cq=0;
+            const pv=prevMostra(p);
             const cels=coms.map(c=>{
-                const n=(p.pr[c.sigla]||[]).length, tot=c.membros.length, on=conv.has(c.sigla);
-                if(on && n>=Math.floor(tot/2)+1) cq++;
-                return '<td class="c'+(on?'':' dim')+'"'+(on?'':' title="Não convocada neste congresso"')+'>'+n+'/'+tot+qbarHtml(n,tot)+'</td>';
+                const tot=c.membros.length, on=conv.has(c.sigla);
+                const k=pv?prevConta(p,c):{n:(p.pr[c.sigla]||[]).length,d:0,ef:(p.pr[c.sigla]||[]).length};
+                if(on && k.ef>=Math.floor(tot/2)+1) cq++;
+                return '<td class="c'+(on?'':' dim')+'"'+(on?'':' title="Não convocada neste congresso"')+'>'+k.ef+'/'+tot+qbarHtml(k.n,tot,k.d,prevDuv)+'</td>';
             }).join('');
             const abre=cq>conv.size/2;
-            const pv=emPrevia(e.pid);
             h+='<tr class="pr'+(pv?' prev':'')+(selId===e.pid?' sel':'')+'" data-mx="'+e.pid+'" onclick="mxSel(\''+e.pid+'\')" ondblclick="sel(\''+e.pid+'\',\'pres\')"><td class="t">'+esc(p.titulo)+(pv?' <span class="badge-prev">PRÉVIA</span>':'')+'</td>'+cels +
                '<td class="s">'+(conv.size?(pv?(abre?'Poderia abrir':'Não poderia abrir'):(abre?'Pode abrir':'Não pode abrir')):'')+'</td></tr>';
             return;
@@ -898,6 +920,7 @@ function presencaInfo(p, nome) {
     const aqui=coms.filter(c=>convP.has(c.sigla) && (p.pr[c.sigla]||[]).includes(nome)).map(c=>c.sigla);
     if(aqui.length) return { ord:0, txt:'✓ presente ('+aqui.join(', ')+')' };
     if((p.vistos||[]).includes(nome)) return { ord:0, txt:'✓ visto no plenário' };
+    if(prevNaCasa(p,nome)) return { ord:0, txt:'na casa (prévia)' };
     const ip=congIdx(p.id);
     const segP=ip>-1?segDe(ip)[0]:-1;
     const onde=[];
@@ -928,30 +951,35 @@ function swapOptsHtml(p, c, trocas, conv) {
 }
 
 function renderDetPres(el, p) {
-    const pv=emPrevia(p.id);
+    const pv=prevOn;
     let h=renderNavBar(p.id);
     h+='<div class="det'+(pv?' em-prev':'')+'"><h2>'+esc(p.titulo)+(pv?' <span class="badge-prev">PRÉVIA</span>':'')+'</h2>' +
         previaBoxHtml(p) +
-        '<p class="hint">Marque os presentes. <span class="lg-nova">verde</span> = marcado neste registro; <span class="lg-herd">azul</span> = herdado do registro anterior.</p>' +
-        '<div class="pa"><button onclick="presAll(\''+p.id+'\',true)">Todos presentes</button>' +
-        '<button onclick="presAll(\''+p.id+'\',false)">Todos ausentes</button></div>';
+        (pv ? '<p class="hint"><span class="pvg lg r">&#10003;</span> presença real &nbsp; <span class="pvg lg c">&#9679;</span> na casa e vai marcar &nbsp; <span class="pvg lg d">?</span> na casa, mas em dúvida se marca &nbsp;&middot;&nbsp; cada clique no nome avança: &#9679; &rarr; ? &rarr; desmarca</p>'
+            : '<p class="hint">Marque os presentes. <span class="lg-nova">verde</span> = marcado neste registro; <span class="lg-herd">azul</span> = herdado do registro anterior.</p>' +
+              '<div class="pa"><button onclick="presAll(\''+p.id+'\',true)">Todos presentes</button>' +
+              '<button onclick="presAll(\''+p.id+'\',false)">Todos ausentes</button></div>');
 
     // Resumo abertura (só as comissões convocadas pelos itens deste congresso)
     const conv = getConvocadas(p.id);
-    let cq=0;
+    let cq=0, cqC=0, cqD=0;   // com quórum: na visão atual / só com os certos / contando os duvidosos
     h+='<div class="cgrid">';
     coms.forEach(c=>{
         if(!conv.has(c.sigla)) return;
-        const pr=p.pr[c.sigla]||[];
-        const q=Math.floor(c.membros.length/2)+1;
-        const ok=pr.length>=q;
+        const pr=p.pr[c.sigla]||[], tot=c.membros.length;
+        const q=Math.floor(tot/2)+1;
+        const k=pv?prevConta(p,c):{n:pr.length,d:0,ef:pr.length};
+        const ok=k.ef>=q;
         if(ok) cq++;
+        if(k.n>=q) cqC++;
+        if(k.n+k.d>=q) cqD++;
         h+='<div class="pc '+(ok?'st-ok':'st-no')+'"><div class="pch" title="'+ea(c.nome)+'"><span>'+c.sigla+'</span>' +
-           qbarHtml(pr.length,c.membros.length) +
-           '<span class="qb '+(ok?'qok':'qno')+'">'+pr.length+'/'+c.membros.length+(ok?' ✓':' · falta '+(q-pr.length))+'</span></div>' +
+           qbarHtml(k.n,tot,k.d,prevDuv) +
+           '<span class="qb '+(ok?'qok':'qno')+'">'+k.ef+'/'+tot+(ok?' ✓':' · falta '+(q-k.ef))+(k.d&&!prevDuv?' · '+k.d+'?':'')+'</span></div>' +
            '<div class="pcb"><div class="mg">';
         const ci=coms.indexOf(c);
-        c.membros.forEach((m,mi)=>{
+        if(pv) prevMembros(p,c).forEach((mb,mi)=>{ h+=prevChipHtml(p,c,ci,mi,mb,conv); });
+        else c.membros.forEach((m,mi)=>{
             const checked=pr.includes(m);
             const herdada=p.herd&&p.herd[c.sigla]&&p.herd[c.sigla].includes(m);
             const mcCls=checked?(herdada?'mc herd':'mc nova'):'mc';
@@ -977,8 +1005,15 @@ function renderDetPres(el, p) {
         const abre=cq>conv.size/2;
         const main=document.getElementById('main');
         if(main){ main.classList.remove('st-ok','st-no','st-pe'); main.classList.add(abre?'st-ok':'st-no'); }
-        h+='<div class="res"><h3>Abertura'+(pv?' (prévia)':'')+'</h3><p>Comissões convocadas com quórum: '+cq+'/'+conv.size+'</p>' +
-           '<p class="rs '+(abre?'ok':'no')+'">'+(pv?'Com o que está marcado, o Congresso '+(abre?'poderia abrir':'NÃO poderia abrir'):'Congresso '+(abre?'pode abrir':'NÃO pode abrir'))+'</p></div>';
+        if(pv){
+            const aC=cqC>conv.size/2, aD=cqD>conv.size/2;
+            h+='<div class="res"><h3>Abertura (prévia)</h3>' +
+               '<p class="rs '+(aC?'ok':'no')+(prevDuv?' apag':'')+'">Só com os certos (&#10003; e &#9679;): '+cqC+'/'+conv.size+' comissões com quórum &mdash; o Congresso '+(aC?'poderia abrir':'NÃO poderia abrir')+'</p>' +
+               '<p class="rs '+(aD?'ok':'no')+(prevDuv?'':' apag')+'">Contando os duvidosos (?): '+cqD+'/'+conv.size+' comissões com quórum &mdash; o Congresso '+(aD?'poderia abrir':'NÃO poderia abrir')+'</p></div>';
+        } else {
+            h+='<div class="res"><h3>Abertura</h3><p>Comissões convocadas com quórum: '+cq+'/'+conv.size+'</p>' +
+               '<p class="rs '+(abre?'ok':'no')+'">Congresso '+(abre?'pode abrir':'NÃO pode abrir')+'</p></div>';
+        }
     }
     h+='</div>';
     el.innerHTML=h;
@@ -1290,9 +1325,7 @@ function trocasPossiveis(c, nome){
 function swapMem(pid, ci, mi, novo){
     if(!novo) return;
     const c=coms[ci]; const ant=c.membros[mi]; const sig=c.sigla;
-    const pv=emPrevia(pid);   // na prévia a troca é de teste: sem confirmação e sem anotar (desfaz-se com um clique)
-    if(!pv && !confirm('Trocar '+ant+' por '+novo+' na '+sig+'?')){ render(); return; }
-    if(pv) previa.trocas.push({ sig, ant, novo, antPres:!!(pres[pid].pr[sig]||[]).includes(ant), cP:c.pres===ant, cV:c.vice===ant });
+    if(!confirm('Trocar '+ant+' por '+novo+' na '+sig+'?')){ render(); return; }
     c.membros[mi]=novo;
     if(c.pres===ant) c.pres=null;
     if(c.vice===ant) c.vice=null;
@@ -1303,7 +1336,7 @@ function swapMem(pid, ci, mi, novo){
         if(i>-1) p.pr[sig].splice(i,1);
         if(!p.pr[sig].includes(novo)) p.pr[sig].push(novo);
     }
-    if(!pv) anotarTroca(sig, ant, novo);
+    anotarTroca(sig, ant, novo);
     save(); render();
 }
 function anotarTroca(sig, ant, novo){
@@ -1313,72 +1346,146 @@ function anotarTroca(sig, ant, novo){
 }
 
 // ========== PRÉVIA DE PRESENÇAS ==========
-// Antes de abrir o Congresso: marcar quem já chegou e testar substituições num registro de
-// presença, podendo depois descartar tudo, ficar só com as presenças ou valer tudo.
-// Guarda o registro como estava ao começar e a lista das trocas feitas (para desfazê-las).
-function emPrevia(pid){ return !!previa && previa.pid===pid; }
-function previaIniciar(pid){
+// A prévia é uma máscara sobre a presença real de cada registro: fica em p.prev e nunca
+// mexe em p.pr nem na composição das comissões. Com a prévia visível (prevOn), os cliques
+// no registro marcam a máscara; oculta, tudo volta a mostrar e a editar só o real.
+//   p.prev.m[sigla][nome] = 'c' (na casa e vai marcar) | 'd' (na casa, mas em dúvida)
+//   p.prev.trocas = [{sig, ant, novo}]   substituições de teste (uma por vaga)
+// Os itens da pauta continuam contando só a presença real.
+function prevDe(p){ if(!p.prev) p.prev={m:{},trocas:[]}; return p.prev; }
+function prevTem(p){ return !!p && !!p.prev && (p.prev.trocas.length>0 || Object.values(p.prev.m).some(o=>Object.keys(o).length>0)); }
+function prevMostra(p){ return prevOn && prevTem(p); }
+// Marcado na prévia em qualquer comissão deste registro (serve de "está na casa")
+function prevNaCasa(p, nome){ return prevOn && !!p.prev && Object.values(p.prev.m).some(o=>!!o[nome]); }
+// Membros da comissão como a prévia os vê: cada vaga com o titular ou com quem o substitui no teste
+function prevMembros(p, c){
+    const tr=p.prev?p.prev.trocas.filter(t=>t.sig===c.sigla):[];
+    return c.membros.map(m=>{ const t=tr.find(x=>x.ant===m); return t?{nome:t.novo, ant:m}:{nome:m}; });
+}
+// 'r' presença real | 'c' certo | 'd' duvidoso | '' ninguém viu
+function prevEstado(p, c, mb){
+    if(!mb.ant && (p.pr[c.sigla]||[]).includes(mb.nome)) return 'r';
+    const e=(p.prev && p.prev.m[c.sigla] && p.prev.m[c.sigla][mb.nome]) || '';
+    return mb.ant ? (e||'c') : e;   // substituto de teste está na casa por definição
+}
+// n = firmes (reais + certos), d = duvidosos, ef = o que conta agora
+function prevConta(p, c){
+    let n=0, d=0;
+    prevMembros(p,c).forEach(mb=>{ const e=prevEstado(p,c,mb); if(e==='r'||e==='c') n++; else if(e==='d') d++; });
+    return { n, d, ef:n+(prevDuv?d:0) };
+}
+function prevToggle(){ prevOn=!prevOn; save(); render(); }
+function prevSetDuv(v){ prevDuv=!!v; save(); render(); }
+function prevCicla(pid, ci, mi){
+    const p=pres[pid], c=coms[ci]; if(!p||!c) return;
+    const mb=prevMembros(p,c)[mi]; if(!mb) return;
+    const e=prevEstado(p,c,mb);
+    if(e==='r') return;   // presença real não se mexe pela prévia
+    const m=prevDe(p).m; if(!m[c.sigla]) m[c.sigla]={};
+    const nx = mb.ant ? (e==='c'?'d':'c') : (e===''?'c':e==='c'?'d':'');
+    if(nx) m[c.sigla][mb.nome]=nx; else delete m[c.sigla][mb.nome];
+    save(); render();
+}
+// Troca de teste na vaga mi da comissão ('-' desfaz). Não pede confirmação nem anota: é só máscara.
+function prevTroca(pid, ci, mi, novo){
+    if(!novo) return;
+    const p=pres[pid], c=coms[ci]; if(!p||!c) return;
+    const ant=c.membros[mi], pvv=prevDe(p);
+    const i=pvv.trocas.findIndex(t=>t.sig===c.sigla && t.ant===ant);
+    if(i>-1){ const v=pvv.trocas[i].novo; pvv.trocas.splice(i,1); if(pvv.m[c.sigla]) delete pvv.m[c.sigla][v]; }
+    if(novo!=='-'){
+        pvv.trocas.push({ sig:c.sigla, ant, novo });
+        if(!pvv.m[c.sigla]) pvv.m[c.sigla]={};
+        pvv.m[c.sigla][novo]='c';
+    }
+    save(); render();
+}
+function prevLimpar(pid){
     const p=pres[pid]; if(!p) return;
-    if(previa && pres[previa.pid]) return;
-    previa={ pid, pr:JSON.parse(JSON.stringify(p.pr||{})), herd:JSON.parse(JSON.stringify(p.herd||{})), trocas:[] };
+    if(!confirm('Apagar todas as marcações e trocas de teste da prévia deste registro? A presença real não muda.')) return;
+    p.prev={m:{},trocas:[]};
     save(); render();
 }
-// Desfaz uma troca de teste: o titular volta à comissão (com o cargo e a presença que tinha)
-function previaReverter(t){
-    const c=coms.find(x=>x.sigla===t.sig); if(!c) return false;
-    const mi=c.membros.indexOf(t.novo); if(mi<0) return false;
-    c.membros[mi]=t.ant;
-    if(t.cP && !c.pres) c.pres=t.ant;
-    if(t.cV && !c.vice) c.vice=t.ant;
-    const p=pres[previa.pid];
-    if(p){
-        const l=(p.pr[t.sig]||[]).filter(n=>n!==t.novo);
-        if(t.antPres && !l.includes(t.ant)) l.push(t.ant);
-        p.pr[t.sig]=l;
+// Passa a prévia para o real: vira presença quem está ● (e ?, se os duvidosos estiverem sendo
+// contados). Com comTrocas, as substituições de teste viram trocas de verdade (com anotação).
+// O que não for efetivado continua guardado na prévia.
+function prevEfetivar(pid, comTrocas){
+    const p=pres[pid]; if(!p||!p.prev) return;
+    const ops=[];
+    coms.forEach(c=>prevMembros(p,c).forEach((mb,mi)=>{
+        const e=prevEstado(p,c,mb);
+        if(e!=='c' && !(e==='d' && prevDuv)) return;
+        if(mb.ant && !comTrocas) return;
+        ops.push({c,mi,mb});
+    }));
+    const nT=ops.filter(o=>o.mb.ant).length, nP=ops.length-nT;
+    if(!ops.length){ alert('Não há nada marcado na prévia para efetivar.'); return; }
+    if(!confirm('Efetivar a prévia?\n\n'+nP+' presença(s) passam a valer como reais'+(prevDuv?' (incluindo os duvidosos)':' (os duvidosos ficam só na prévia)')+
+        (nT?'\n'+nT+' troca(s) de membro passam a valer e vão para as Anotações':'')+'\n\nDepois disso a prévia é ocultada.')) return;
+    ops.forEach(({c,mi,mb})=>{
+        const sig=c.sigla;
+        if(!p.pr[sig]) p.pr[sig]=[];
+        if(mb.ant){
+            c.membros[mi]=mb.nome;
+            if(c.pres===mb.ant) c.pres=null;
+            if(c.vice===mb.ant) c.vice=null;
+            p.pr[sig]=p.pr[sig].filter(n=>n!==mb.ant);
+            anotarTroca(sig, mb.ant, mb.nome);
+            p.prev.trocas=p.prev.trocas.filter(t=>!(t.sig===sig && t.ant===mb.ant));
+        }
+        if(!p.pr[sig].includes(mb.nome)) p.pr[sig].push(mb.nome);
+        if(p.prev.m[sig]) delete p.prev.m[sig][mb.nome];
+    });
+    prevOn=false;
+    save(); render();
+}
+// Um nome de vaga na prévia: clique avança a marca; o menu ⇄ testa uma troca
+function prevChipHtml(p, c, ci, mi, mb, conv){
+    const e=prevEstado(p,c,mb);
+    const g = e==='r'?'&#10003;':e==='c'?'&#9679;':e==='d'?'?':'';
+    const tt = e==='r' ? 'Presença real já marcada (a prévia não mexe nela)'
+             : e==='c' ? 'Na casa e vai marcar. Clique: passar para dúvida'
+             : e==='d' ? 'Na casa, mas em dúvida se marca. Clique: '+(mb.ant?'voltar para certo':'desmarcar')
+             : 'Clique: está na casa e vai marcar';
+    const orig=c.membros[mi];
+    const emUso=p.prev?p.prev.trocas.filter(t=>t.sig===c.sigla && t.ant!==orig).map(t=>t.novo):[];
+    const trocas=trocasPossiveis(c,orig).filter(n=>!emUso.includes(n) && n!==mb.nome);
+    let sw='';
+    if(trocas.length || mb.ant){
+        sw='<select class="swap" title="Testar a troca por um colega do mesmo partido (só na prévia)" onclick="event.stopPropagation()" ' +
+           'onchange="prevTroca(\''+p.id+'\','+ci+','+mi+',this.value)"><option value="">&#8644;</option>' +
+           (mb.ant?'<option value="-">&#8617; desfazer: volta '+esc(mb.ant)+'</option>':'') +
+           swapOptsHtml(p, c, trocas, conv) + '</select>';
     }
-    return true;
-}
-function previaPodeDesfazer(t){ const c=coms.find(x=>x.sigla===t.sig); return !!c && c.membros.includes(t.novo); }
-function previaDesfazTroca(i){
-    if(!previa) return;
-    const t=previa.trocas[i];
-    if(t && previaReverter(t)) previa.trocas.splice(i,1);
-    save(); render();
-}
-function previaDesfazTrocas(){ for(let i=previa.trocas.length-1;i>=0;i--) previaReverter(previa.trocas[i]); }
-// modo: 'descartar' (volta ao que era) | 'pres' (ficam as presenças, saem as trocas) | 'tudo' (vale tudo)
-function previaEncerrar(modo){
-    if(!previa) return;
-    const p=pres[previa.pid];
-    if(modo==='tudo') previa.trocas.forEach(t=>{ if(previaPodeDesfazer(t)) anotarTroca(t.sig, t.ant, t.novo); });
-    else {
-        previaDesfazTrocas();
-        if(modo==='descartar' && p){ p.pr=previa.pr; p.herd=previa.herd; }   // os vistos ficam: quem foi visto na casa continua visto
-    }
-    previa=null;
-    save(); render();
+    return '<div class="mc pvc pv-'+(e||'n')+'" title="'+tt+'" onclick="prevCicla(\''+p.id+'\','+ci+','+mi+')">' +
+           '<span class="pvg">'+g+'</span><span class="pvn">'+cargoBadge(c,mb.nome)+esc(mb.nome) +
+           (mb.ant?'<small>no lugar de '+esc(mb.ant)+'</small>':'')+'</span>'+sw+'</div>';
 }
 function previaBoxHtml(p){
-    if(!emPrevia(p.id)){
-        const outra=previa && pres[previa.pid];
-        return '<div class="pa"><button class="bt-prev" '+(outra?'disabled title="Já há uma prévia em andamento em '+ea(pres[previa.pid].titulo)+'"':'title="Marcar quem já chegou e testar substituições sem compromisso: dá para descartar tudo depois"')+
-               ' onclick="previaIniciar(\''+p.id+'\')">&#9998; Fazer prévia das presenças</button></div>';
+    if(!prevOn){
+        return '<div class="pa"><button class="bt-prev" title="Liga a prévia: uma camada por cima das presenças reais para marcar quem já está na casa e testar trocas, sem mexer no que é real" onclick="prevToggle()">&#9998; Mostrar prévia</button>' +
+               (prevTem(p)?'<span class="hint" style="align-self:center;margin:0">Há marcações de prévia guardadas neste registro (ocultas).</span>':'')+'</div>';
     }
-    let h='<div class="prev-box"><b>Prévia em andamento.</b> Marque quem você já vê e teste substituições à vontade: as trocas feitas aqui não pedem confirmação nem vão para as Anotações. Enquanto a prévia durar, os itens abaixo deste registro contam o quórum com estas marcações.';
-    if(previa.trocas.length){
-        h+='<div class="prev-tr">Substituições em teste:';
-        previa.trocas.forEach((t,i)=>{
+    const pvv=prevDe(p);
+    let h='<div class="prev-box"><b>Prévia visível.</b> Os cliques nos nomes marcam a prévia, não a presença real: ela é uma camada por cima, que você pode ocultar e mostrar quando quiser. As trocas feitas aqui são de teste. Os itens da pauta continuam contando só a presença real.' +
+          '<label class="pv-duv"><input type="checkbox" '+(prevDuv?'checked':'')+' onchange="prevSetDuv(this.checked)"> Contar os duvidosos (?) como presentes</label>';
+    if(pvv.trocas.length){
+        h+='<div class="prev-tr">Trocas em teste:';
+        pvv.trocas.forEach(t=>{
+            const ci=coms.findIndex(c=>c.sigla===t.sig), mi=ci>-1?coms[ci].membros.indexOf(t.ant):-1;
             h+='<div><span>'+t.sig+': '+esc(t.ant)+' &rarr; '+esc(t.novo)+'</span>'+
-               (previaPodeDesfazer(t)?'<button onclick="previaDesfazTroca('+i+')">desfazer</button>':'')+'</div>';
+               (mi>-1?'<button onclick="prevTroca(\''+p.id+'\','+ci+','+mi+',\'-\')">desfazer</button>':'')+'</div>';
         });
         h+='</div>';
     }
     h+=previaSugestoesHtml(p);
-    const temTr=previa.trocas.length>0;
+    const temTr=pvv.trocas.length>0;
+    const oQue='quem está ●'+(prevDuv?' ou ?':' (os ? ficam só na prévia)');
     h+='<div class="prev-ac">' +
-       '<button onclick="previaEncerrar(\'descartar\')" title="As presenças e as comissões voltam a ser como eram antes da prévia; os vistos no plenário continuam marcados">Descartar a prévia</button>' +
-       (temTr?'<button onclick="previaEncerrar(\'pres\')" title="Ficam marcados os presentes; as substituições em teste são desfeitas">Valer só as presenças</button>':'') +
-       '<button class="pri" onclick="previaEncerrar(\'tudo\')" title="'+(temTr?'Presenças e substituições passam a valer; as trocas são anotadas nas Anotações':'As presenças marcadas passam a valer')+'">'+(temTr?'Valer tudo (presenças e trocas)':'Valer como presença real')+'</button>' +
+       '<button onclick="prevToggle()" title="Esconde a prévia e volta a mostrar e a editar só a presença real. As marcações ficam guardadas.">Ocultar prévia</button>' +
+       (prevTem(p)?'<button onclick="prevLimpar(\''+p.id+'\')" title="Apaga as marcações e as trocas de teste deste registro. A presença real não muda.">Limpar prévia</button>':'') +
+       (prevTem(p)?'<button class="'+(temTr?'':'pri')+'" onclick="prevEfetivar(\''+p.id+'\',false)" title="Vira presença real '+oQue+'. As trocas de teste não são aplicadas.">Efetivar presenças</button>':'') +
+       (temTr?'<button class="pri" onclick="prevEfetivar(\''+p.id+'\',true)" title="Vira presença real '+oQue+', e as trocas de teste passam a valer (com anotação nas Anotações).">Efetivar presenças e trocas</button>':'') +
        '</div></div>';
     return h;
 }
@@ -1392,7 +1499,7 @@ function foraDasConvocadas(conv){
 // Está na casa: marcado presente em alguma comissão deste registro ou marcado como visto
 function vistoAqui(p, nome){
     const conv=getConvocadas(p.id);   // presença em comissão não convocada não aparece na tela: não conta
-    return (p.vistos||[]).includes(nome) || coms.some(c=>conv.has(c.sigla) && (p.pr[c.sigla]||[]).includes(nome));
+    return (p.vistos||[]).includes(nome) || prevNaCasa(p,nome) || coms.some(c=>conv.has(c.sigla) && (p.pr[c.sigla]||[]).includes(nome));
 }
 function togVisto(pid, nome){
     const p=pres[pid]; if(!p) return;
@@ -1428,35 +1535,38 @@ function vistosHtml(p, conv, pv){
     h+='</div></div></div>';
     return h;
 }
-// Para cada comissão convocada ainda sem quórum: ausentes que têm colega de partido já visto na casa
+// Para cada comissão convocada ainda sem quórum (na visão atual da prévia): vagas em que
+// ninguém foi visto e que têm colega de partido já na casa
 function previaSugestoesHtml(p){
     const conv=getConvocadas(p.id);
     let h='';
     coms.forEach((c,ci)=>{
         if(!conv.has(c.sigla)) return;
-        const pr=p.pr[c.sigla]||[], q=Math.floor(c.membros.length/2)+1;
-        if(pr.length>=q) return;
+        const q=Math.floor(c.membros.length/2)+1, k=prevConta(p,c);
+        if(k.ef>=q) return;
+        const mbs=prevMembros(p,c), nomes=mbs.map(x=>x.nome);
         let linhas='';
-        c.membros.forEach((m,mi)=>{
-            if(pr.includes(m)) return;
-            const cand=trocasPossiveis(c,m).filter(n=>vistoAqui(p,n));
+        mbs.forEach((mb,mi)=>{
+            if(mb.ant || prevEstado(p,c,mb)) return;
+            const cand=trocasPossiveis(c,mb.nome).filter(n=>!nomes.includes(n) && vistoAqui(p,n));
             if(!cand.length) return;
-            linhas+='<div><span>'+esc(m)+' &rarr;</span>'+cand.map(n=>{
+            linhas+='<div><span>'+esc(mb.nome)+' &rarr;</span>'+cand.map(n=>{
                 const outras=coms.filter(o=>o!==c && conv.has(o.sigla) && o.membros.includes(n)).map(o=>o.sigla);
-                return '<button title="Testar esta troca'+(outras.length?' (também é membro: '+outras.join(', ')+')':'')+'" data-n="'+ea(n)+'" onclick="swapMem(\''+p.id+'\','+ci+','+mi+',this.dataset.n)">'+esc(n)+(outras.length?' <small>'+outras.join(', ')+'</small>':'')+'</button>';
+                return '<button title="Testar esta troca'+(outras.length?' (também é membro: '+outras.join(', ')+')':'')+'" data-n="'+ea(n)+'" onclick="prevTroca(\''+p.id+'\','+ci+','+mi+',this.dataset.n)">'+esc(n)+(outras.length?' <small>'+outras.join(', ')+'</small>':'')+'</button>';
             }).join('')+'</div>';
         });
-        if(linhas) h+='<div class="prev-sg"><b>'+c.sigla+'</b> (falta '+(q-pr.length)+'):'+linhas+'</div>';
+        if(linhas) h+='<div class="prev-sg"><b>'+c.sigla+'</b> (falta '+(q-k.ef)+'):'+linhas+'</div>';
     });
     if(!h) return '';
-    return '<div class="prev-tr">Trocas possíveis com quem já está na casa (clique para testar):'+h+'</div>';
+    const n=(h.match(/<button /g)||[]).length;
+    return '<details class="prev-tr prev-det"'+(prevSgAberto?' open':'')+' ontoggle="prevSgAberto=this.open"><summary>Trocas possíveis com quem já está na casa ('+n+') &mdash; clique num nome para testar</summary>'+h+'</details>';
 }
+let prevSgAberto=false;   // lista de sugestões de troca aberta (fica fechada por padrão: é longa)
 function renderPreviaHdr(){
-    if(previa && !pres[previa.pid]) previa=null;
     const b=document.getElementById('bt-prev-hdr'); if(!b) return;
-    b.style.display=previa?'':'none';
+    b.classList.toggle('on', prevOn);
+    b.innerHTML='&#9998; Prévia'+(prevOn?' visível':'');
 }
-function previaIr(){ if(previa) sel(previa.pid,'pres'); }
 
 // ========== LINK SPLEGIS ==========
 // Extrai "PL 123/2026" do título/descrição do item e monta os links do SPLegis
@@ -1652,7 +1762,6 @@ function setSepTit(sid, v) {
 
 function rmPres(pid) {
     cong=cong.filter(e=>!(e.t==='pres'&&e.pid===pid));
-    if(emPrevia(pid)){ previaDesfazTrocas(); previa=null; }
     delete pres[pid];
     if(selId===pid) selId=null;
     save(); render();
@@ -1914,7 +2023,7 @@ function importState(txt) {
     for (let i = 1; i <= 100; i++) itens.push(mkItem(i));
     cong = [];
     pres = {};
-    previa = null;
+    prevOn = false;
     seps = {};
     nSep = 1;
     nPres = 2;
